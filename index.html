@@ -509,14 +509,14 @@ class Component extends DCLogic {
         style: { position: 'relative', zIndex: 3, maxWidth: '1240px', margin: '0 auto', padding: 'clamp(32px,4.5vw,60px) 28px calc(clamp(58px,8vw,116px) + clamp(26px,3vw,44px))', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '22px' }
       }, [
         h('div', { key: 'l' }, [
-          h('p', { key: 'e', style: { margin: '0 0 10px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#DCE4C9' } }, 'Cupón GATA10'),
-          h('h2', { key: 'h', style: { margin: '0 0 8px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(26px,3.2vw,40px)', lineHeight: 1.12 } }, '10% off en tu primera compra'),
-          h('p', { key: 'p', style: { margin: 0, maxWidth: '46ch', fontSize: '15.5px', lineHeight: 1.7, color: '#E8EEDC' } }, 'Mencioná el código al escribirnos por WhatsApp y te lo aplicamos al total del pedido.')
+          h('p', { key: 'e', style: { margin: '0 0 10px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#DCE4C9' } }, 'De dónde viene el nombre'),
+          h('h2', { key: 'h', style: { margin: '0 0 8px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(26px,3.2vw,40px)', lineHeight: 1.12 } }, 'Dos debilidades de la casa'),
+          h('p', { key: 'p', style: { margin: 0, maxWidth: '46ch', fontSize: '15.5px', lineHeight: 1.7, color: '#E8EEDC' } }, 'Los gatos y Madrid. De ahí salió el nombre, el cascabel dorado y la forma de elegir cada cosa: una por una, sin apuro.')
         ]),
         h('a', {
-          key: 'a', href: 'https://wa.me/595981772872?text=' + encodeURIComponent('Hola! Quiero usar el cupón GATA10'),
+          key: 'a', onClick: () => this.go('#/nosotros'),
           style: { background: '#FDFBF8', color: INK, padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' }
-        }, 'Usar el cupón')
+        }, 'Conocé la historia')
       ])]),
       this.section([
         this.eyebrow('— Tecnología y accesorios'),
