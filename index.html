@@ -48,6 +48,50 @@
   @media (prefers-reduced-motion: reduce){
     .lgm-zoom img, .lgm-lift, .lgm-veil, .lgm-capt, .lgm-paw { transition:none !important; transform:none !important; filter:none !important }
   }
+
+  /* --- adaptacion a celular --- */
+  img, video { max-width:100% }
+  @media (hover: none) {
+    /* en pantallas tactiles el zoom se dispara al tocar: lo desactivamos */
+    .lgm-zoom img { transform:none !important; filter:none !important }
+    .lgm-lift:hover { transform:none !important; box-shadow:none !important }
+  }
+  @media (max-width: 860px){
+    .lgm-shop { grid-template-columns:minmax(0,1fr) !important }
+    .lgm-shopside { flex-direction:row !important; flex-wrap:nowrap !important; align-items:center !important;
+      gap:10px !important; overflow-x:auto; padding-bottom:6px; scrollbar-width:none; -webkit-overflow-scrolling:touch }
+    .lgm-shopside::-webkit-scrollbar { display:none }
+    .lgm-shopside > * { flex:none !important; white-space:nowrap }
+    .lgm-shopside > p { margin:0 4px 0 0 !important }
+    .lgm-shopside button { border:1px solid #E3D3CE !important; border-radius:999px !important; padding:9px 16px !important; font-size:14.5px !important }
+    .lgm-pdp { grid-template-columns:minmax(0,1fr) !important }
+    .lgm-head { padding:12px 20px !important; gap:8px 14px !important }
+    .lgm-nav { order:3; flex:1 0 100% !important; justify-content:center !important; gap:14px !important }
+  }
+  @media (max-width: 720px){
+    .lgm-sec { padding-left:18px !important; padding-right:18px !important }
+    .lgm-head { padding:10px 16px !important; gap:8px 12px !important }
+    .lgm-brand .lgm-brand-txt { font-size:16px !important; letter-spacing:.05em !important }
+    .lgm-nav { order:3; flex:1 0 100% !important; justify-content:space-between !important; gap:6px !important }
+    .lgm-nav a { padding:6px 0 }
+    .lgm-cart-btn { padding:9px 14px !important; font-size:11.5px !important; gap:8px !important }
+    .lgm-hero { padding-left:18px !important; padding-right:18px !important }
+    .lgm-band { padding-left:14px !important; padding-right:14px !important }
+    .lgm-bandcat { width:clamp(210px,62vw,300px) !important; height:clamp(160px,46vw,230px) !important }
+    .lgm-about { min-height:0 !important }
+    .lgm-about .lgm-about-txt { padding:22px 18px 26px !important }
+    .lgm-about .lgm-about-veil { background:linear-gradient(180deg,rgba(20,14,12,.55) 0%,rgba(20,14,12,.7) 50%,rgba(20,14,12,.9) 100%) !important }
+    .lgm-foot-outer { padding:36px 18px 22px !important }
+    .lgm-foot { grid-template-columns:minmax(0,1fr) !important; gap:24px !important }
+    .lgm-footcat { justify-self:center !important; align-self:center !important; width:clamp(120px,38vw,180px) !important }
+    .lgm-foot-legal { padding-left:18px !important; padding-right:18px !important }
+    .lgm-pdp-thumb { width:66px !important; height:76px !important }
+  }
+  @media (max-width: 400px){
+    .lgm-brand .lgm-brand-txt { font-size:14.5px !important }
+    .lgm-nav { font-size:12px !important }
+    .lgm-cart-btn { padding:9px 12px !important }
+  }
 </style>
 </helmet>
 
@@ -58,19 +102,19 @@
     <img src="./assets/gata-sentada-blanca.png" alt="" aria-hidden="true" style="position:absolute;right:26px;bottom:0;z-index:2;height:86%;width:auto;display:block">
   </div>
 
-  <header style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:16px 20px;flex-wrap:wrap;padding:14px 24px;background:rgba(253,251,248,.94);backdrop-filter:blur(8px);border-bottom:1px solid #EDDCD8">
-    <a onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;color:#3A2B26">
+  <header class="lgm-head" style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:16px 20px;flex-wrap:wrap;padding:14px 24px;background:rgba(253,251,248,.94);backdrop-filter:blur(8px);border-bottom:1px solid #EDDCD8">
+    <a class="lgm-brand" onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;color:#3A2B26">
       <span style="width:22px;height:22px;display:block;flex:none;background-image:radial-gradient(ellipse 34% 26% at 50% 72%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 22% 40%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 41% 25%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 60% 25%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 79% 40%,#A85E72 99%,transparent 100%)"></span>
-      <span style="font-family:'Cormorant Garamond',serif;font-size:19px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap">La Gata de Madrid</span>
+      <span class="lgm-brand-txt" style="font-family:'Cormorant Garamond',serif;font-size:19px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap">La Gata de Madrid</span>
     </a>
-    <nav style="display:flex;align-items:center;flex-wrap:wrap;flex:1 1 260px;justify-content:center;min-width:0;gap:12px;font-size:13px;letter-spacing:.08em;text-transform:uppercase">
+    <nav class="lgm-nav" style="display:flex;align-items:center;flex-wrap:wrap;flex:1 1 260px;justify-content:center;min-width:0;gap:12px;font-size:13px;letter-spacing:.08em;text-transform:uppercase">
       <a onClick="{{ goHome }}" style="color:{{ inicioColor }}">Inicio</a>
       <span class="lgm-paw" role="img" aria-label="huella de gata" title="Huella de gata" style="width:16px;height:16px;display:inline-block;flex:none;background-repeat:no-repeat;background-image:radial-gradient(ellipse 40% 29% at 50% 77%,#C2258F 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 19% 43%,#C2258F 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 39% 22%,#C2258F 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 61% 22%,#C2258F 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 81% 43%,#C2258F 99%,transparent 100%)"></span>
       <a onClick="{{ goProductos }}" style="color:{{ productosColor }}">Productos</a>
       <span class="lgm-paw" role="img" aria-label="huella de gata" title="Huella de gata" style="width:16px;height:16px;display:inline-block;flex:none;background-repeat:no-repeat;background-image:radial-gradient(ellipse 40% 29% at 50% 77%,#C2258F 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 19% 43%,#C2258F 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 39% 22%,#C2258F 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 61% 22%,#C2258F 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 81% 43%,#C2258F 99%,transparent 100%)"></span>
       <a onClick="{{ goNosotros }}" style="color:{{ nosotrosColor }}">Nosotros</a>
     </nav>
-    <button type="button" onClick="{{ openCart }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;background:#65734A;color:#FFFFFF;border:0;border-radius:999px;padding:10px 18px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase" style-hover="background:#4C5836">
+    <button type="button" class="lgm-cart-btn" onClick="{{ openCart }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;background:#65734A;color:#FFFFFF;border:0;border-radius:999px;padding:10px 18px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase" style-hover="background:#4C5836">
       <span>Carrito</span>
       <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#FFFFFF;color:#3A2B26;font-size:12px;letter-spacing:0">{{ cartCount }}</span>
     </button>
@@ -80,8 +124,8 @@
 
   {{ overlayEl }}
 
-  <footer style="position:relative;border-top:1px solid #EDDCD8;background:#FCEFF0;padding:48px 28px 26px;margin-top:64px">
-    <div style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(220px,1.4fr) auto auto minmax(0,auto);gap:24px clamp(24px,4vw,56px);align-items:start">
+  <footer class="lgm-foot-outer" style="position:relative;border-top:1px solid #EDDCD8;background:#FCEFF0;padding:48px 28px 26px;margin-top:64px">
+    <div class="lgm-foot" style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(220px,1.4fr) auto auto minmax(0,auto);gap:24px clamp(24px,4vw,56px);align-items:start">
       <div>
         <p style="margin:0 0 12px;font-family:'Cormorant Garamond',serif;font-size:27px;letter-spacing:.06em;color:#3A2B26">La Gata de Madrid.</p>
         <p style="margin:0;max-width:34ch;font-size:15px;line-height:1.7;color:#5A5350">Perfumería, tecnología, bolsos y más. Productos originales, elegidos con ojo de gata.</p>
@@ -102,9 +146,9 @@
           <a href="https://wa.me/595981772872">+595 981 772 872</a>
         </div>
       </div>
-      <img src="./assets/gato-echado.png" alt="" aria-hidden="true" style="justify-self:end;align-self:end;width:clamp(150px,17vw,240px);height:auto;display:block;pointer-events:none">
+      <img class="lgm-footcat" src="./assets/gato-echado.png" alt="" aria-hidden="true" style="justify-self:end;align-self:end;width:clamp(150px,17vw,240px);height:auto;display:block;pointer-events:none">
     </div>
-    <div style="max-width:1240px;margin:32px auto 0;padding-top:18px;border-top:1px solid #E5D3CE;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;font-size:12.5px;color:#7A6E6A">
+    <div class="lgm-foot-legal" style="max-width:1240px;margin:32px auto 0;padding-top:18px;border-top:1px solid #E5D3CE;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;font-size:12.5px;color:#7A6E6A">
       <span>© 2026 La Gata de Madrid — Todos los derechos reservados</span>
       <a href="https://neura.com.py" target="_blank" rel="noopener" style="color:#7A6E6A">Desarrollado por Neura</a>
     </div>
@@ -257,7 +301,7 @@ class Component extends DCLogic {
     })));
 
     return h('div', {
-      key: 'band',
+      key: 'band', className: 'lgm-band',
       style: {
         background: '#FDFBF8', borderTop: '1px solid ' + LINE, borderBottom: '1px solid ' + LINE,
         padding: '6px 24px 0', overflow: 'hidden',
@@ -271,7 +315,7 @@ class Component extends DCLogic {
           this.foldText('DE MADRID', 7))
       ]),
       h('div', { key: 'cat', style: { flex: '0 0 auto', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', marginBottom: '-18px' } },
-        h('div', { style: { position: 'relative', width: 'clamp(300px,38vw,470px)', height: 'clamp(230px,30vw,340px)', overflow: 'hidden' } },
+        h('div', { className: 'lgm-bandcat', style: { position: 'relative', width: 'clamp(300px,38vw,470px)', height: 'clamp(230px,30vw,340px)', overflow: 'hidden' } },
           h('div', { style: { position: 'absolute', left: '50%', bottom: 0, transform: 'translateX(-50%)', width: '90%' } }, [
             h('img', { key: 'i', src: './assets/gata-head.png', alt: 'Gata', style: { display: 'block', width: '100%', height: 'auto' } }),
             eye('left'),
@@ -300,7 +344,7 @@ class Component extends DCLogic {
   // ---------- piezas compartidas ----------
   section(children, extra) {
     return h('section', {
-      'data-reveal': '1',
+      'data-reveal': '1', className: 'lgm-sec',
       style: Object.assign({ maxWidth: '1240px', margin: '0 auto', padding: '0 28px' }, extra || {})
     }, children);
   }
@@ -405,7 +449,7 @@ class Component extends DCLogic {
         }),
         h('div', { key: 's', style: { position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(20,14,12,.62) 0%,rgba(20,14,12,.34) 46%,rgba(20,14,12,0) 78%)' } }),
         h('div', {
-          key: 'c',
+          key: 'c', className: 'lgm-hero',
           style: { position: 'relative', maxWidth: '1240px', margin: '0 auto', padding: 'clamp(72px,10vw,132px) 28px clamp(72px,10vw,120px)' }
         }, [
           h('h1', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(44px,6vw,78px)', lineHeight: 1.02, color: '#FFFFFF', textShadow: '0 2px 20px rgba(20,14,12,.5)' } }, [
@@ -476,15 +520,15 @@ class Component extends DCLogic {
       ], { paddingTop: 'clamp(48px,6vw,76px)' }),
       this.section([
         h('div', {
-          key: 'box', className: 'lgm-zoom',
+          key: 'box', className: 'lgm-zoom lgm-about',
           style: { position: 'relative', display: 'flex', alignItems: 'flex-end', minHeight: 'clamp(420px,48vw,560px)', border: '1px solid ' + LINE, borderRadius: '18px', overflow: 'hidden', background: SOFT }
         }, [
           h('img', {
             key: 'bg', src: './assets/logo-gata-madrid.jpg', alt: 'La Gata de Madrid',
             style: { position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%', objectFit: 'cover' }
           }),
-          h('div', { key: 'veil', style: { position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(20,14,12,.12) 0%,rgba(20,14,12,.5) 46%,rgba(20,14,12,.88) 100%)' } }),
-          h('div', { key: 'l', style: { position: 'relative', width: '100%', maxWidth: '62ch', padding: 'clamp(26px,4vw,54px)' } }, [
+          h('div', { key: 'veil', className: 'lgm-about-veil', style: { position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(20,14,12,.12) 0%,rgba(20,14,12,.5) 46%,rgba(20,14,12,.88) 100%)' } }),
+          h('div', { key: 'l', className: 'lgm-about-txt', style: { position: 'relative', width: '100%', maxWidth: '62ch', padding: 'clamp(26px,4vw,54px)' } }, [
             h('p', { key: 'e', style: { margin: '0 0 12px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#E6DACA' } }, '— Nosotros'),
             h('h2', { key: 'h', style: { margin: '0 0 16px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,44px)', lineHeight: 1.12, color: '#FFFFFF', textShadow: '0 2px 18px rgba(20,14,12,.6)' } }, 'Una gata negra, un cascabel dorado y muchas ganas de encontrar cosas lindas.'),
             h('p', { key: 'p', style: { margin: '0 0 22px', maxWidth: '52ch', fontSize: '16px', lineHeight: 1.8, color: '#F0E6E1', textShadow: '0 1px 12px rgba(20,14,12,.55)' } }, 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. Atendemos por WhatsApp y envolvemos cada pedido a mano.'),
@@ -540,10 +584,10 @@ class Component extends DCLogic {
           ])
         ]),
         h('div', {
-          key: 'body',
+          key: 'body', className: 'lgm-shop',
           style: { display: 'grid', gridTemplateColumns: 'minmax(0,200px) minmax(0,1fr)', gap: 'clamp(24px,3vw,44px)', alignItems: 'start', marginTop: 'clamp(28px,3.6vw,44px)' }
         }, [
-          h('aside', { key: 'side', style: { display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start', minWidth: 0 } }, [
+          h('aside', { key: 'side', className: 'lgm-shopside', style: { display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start', minWidth: 0 } }, [
             h('p', { key: 't', style: { margin: '0 0 4px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: INK } }, 'Categorías'),
             pill('Todas', !cat, () => this.setState({ cat: null }))
           ].concat(cats.map(c => pill(c, cat === c, () => this.setState({ cat: c }))))),
@@ -577,7 +621,7 @@ class Component extends DCLogic {
       ], { paddingTop: '22px' }),
       this.section([
         h('div', {
-          key: 'wrap',
+          key: 'wrap', className: 'lgm-pdp',
           style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 'clamp(24px,3.4vw,52px)', alignItems: 'start' }
         }, [
           h('div', { key: 'gal', style: { display: 'flex', flexDirection: 'column', gap: '12px', minWidth: 0 } }, [
@@ -585,7 +629,7 @@ class Component extends DCLogic {
               shots.length ? h('img', { src: shots[i], alt: p.name, style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' } }) : null),
             shots.length > 1 ? h('div', { key: 'th', style: { display: 'flex', gap: '10px', flexWrap: 'wrap' } },
               shots.map((src, n) => h('button', {
-                key: n, type: 'button', className: 'lgm-zoom', onClick: () => this.setState({ shot: n }),
+                key: n, type: 'button', className: 'lgm-zoom lgm-pdp-thumb', onClick: () => this.setState({ shot: n }),
                 style: { cursor: 'pointer', padding: 0, width: '84px', height: '96px', overflow: 'hidden', background: SOFT, border: n === i ? '2px solid ' + ROSE : '1px solid ' + LINE }
               }, h('img', { src: src, alt: p.name, style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' } })))) : null
           ]),
