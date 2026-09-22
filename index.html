@@ -46,11 +46,35 @@
   .lgm-cat:hover .lgm-veil { opacity:1 }
   .lgm-capt { transition:transform .45s cubic-bezier(.22,.7,.2,1) }
   .lgm-cat:hover .lgm-capt { transform:translateY(-5px) }
-  .lgm-paw { transition:transform .35s cubic-bezier(.22,.7,.2,1) }
-  nav:hover .lgm-paw { transform:rotate(-10deg) scale(1.12) }
   @media (prefers-reduced-motion: reduce){
     .lgm-zoom img, .lgm-lift, .lgm-veil, .lgm-capt, .lgm-paw { transition:none !important; transform:none !important; filter:none !important }
   }
+
+  /* --- portada: la foto de Gran Via y el video se alternan --- */
+  .lgm-hero-photo { animation:lgm-hero-foto 18s ease-in-out infinite }
+  .lgm-hero-video { opacity:0; animation:lgm-hero-video 18s ease-in-out infinite }
+  @keyframes lgm-hero-foto {
+    0%   { opacity:1; scale:1 }
+    40%  { opacity:1; scale:1.07 }
+    48%  { opacity:0; scale:1.08 }
+    92%  { opacity:0; scale:1 }
+    100% { opacity:1; scale:1 }
+  }
+  @keyframes lgm-hero-video {
+    0%,40% { opacity:0 }
+    48%,92%{ opacity:1 }
+    100%   { opacity:0 }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .lgm-hero-photo { animation:none; opacity:0 }
+    .lgm-hero-video { animation:none; opacity:1 }
+  }
+
+  /* --- huella de gata: dibujo unico, usado en el menu y en la franja --- */
+  .lgm-paw { display:inline-block; flex:none; line-height:0; width:19px;
+    transition:transform .35s cubic-bezier(.22,.7,.2,1) }
+  .lgm-paw svg { display:block; width:100%; height:auto }
+  nav:hover .lgm-paw { transform:rotate(-10deg) scale(1.12) }
 
   /* --- huellitas de fondo: recorridos que se encienden una tras otra --- */
   .lgm-tracks { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden }
@@ -81,7 +105,8 @@
     .lgm-shopside::-webkit-scrollbar { display:none }
     .lgm-shopside > * { flex:none !important; white-space:nowrap }
     .lgm-shopside > p { margin:0 4px 0 0 !important }
-    .lgm-shopside button { border:1px solid #E3D3CE !important; border-radius:999px !important; padding:9px 16px !important; font-size:14.5px !important }
+    .lgm-shopside { padding:12px 14px !important; border-radius:14px !important }
+    .lgm-shopside button { background:#FFFFFF !important; border:1px solid #E7C3CE !important; border-radius:999px !important; padding:9px 16px !important; font-size:14.5px !important }
     .lgm-pdp { grid-template-columns:minmax(0,1fr) !important }
     .lgm-head { padding:12px 20px !important; gap:8px 14px !important }
     .lgm-nav { order:3; flex:1 0 100% !important; justify-content:center !important; gap:14px !important }
@@ -124,9 +149,9 @@
     </a>
     <nav class="lgm-nav" style="display:flex;align-items:center;flex-wrap:wrap;flex:1 1 260px;justify-content:center;min-width:0;gap:12px;font-size:13px;letter-spacing:.08em;text-transform:uppercase">
       <a onClick="{{ goHome }}" style="color:{{ inicioColor }}">Inicio</a>
-      <span class="lgm-paw" role="img" aria-label="huella de gata" title="Huella de gata" style="width:16px;height:16px;display:inline-block;flex:none;background-repeat:no-repeat;background-image:radial-gradient(ellipse 40% 29% at 50% 77%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 19% 43%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 39% 22%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 61% 22%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 81% 43%,#E0A8B6 99%,transparent 100%)"></span>
+      <span class="lgm-paw" role="img" aria-label="huella de gata" title="Huella de gata"><svg viewBox="0 0 64 64" focusable="false"><g fill="#BE7E93"><ellipse cx="32" cy="46.5" rx="17.5" ry="13.5"/><ellipse cx="11.5" cy="27" rx="6.4" ry="8.4" transform="rotate(-26 11.5 27)"/><ellipse cx="24.5" cy="16" rx="6.7" ry="9" transform="rotate(-9 24.5 16)"/><ellipse cx="39.5" cy="16" rx="6.7" ry="9" transform="rotate(9 39.5 16)"/><ellipse cx="52.5" cy="27" rx="6.4" ry="8.4" transform="rotate(26 52.5 27)"/></g></svg></span>
       <a onClick="{{ goProductos }}" style="color:{{ productosColor }}">Productos</a>
-      <span class="lgm-paw" role="img" aria-label="huella de gata" title="Huella de gata" style="width:16px;height:16px;display:inline-block;flex:none;background-repeat:no-repeat;background-image:radial-gradient(ellipse 40% 29% at 50% 77%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 19% 43%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 39% 22%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 61% 22%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 15% 19% at 81% 43%,#E0A8B6 99%,transparent 100%)"></span>
+      <span class="lgm-paw" role="img" aria-label="huella de gata" title="Huella de gata"><svg viewBox="0 0 64 64" focusable="false"><g fill="#BE7E93"><ellipse cx="32" cy="46.5" rx="17.5" ry="13.5"/><ellipse cx="11.5" cy="27" rx="6.4" ry="8.4" transform="rotate(-26 11.5 27)"/><ellipse cx="24.5" cy="16" rx="6.7" ry="9" transform="rotate(-9 24.5 16)"/><ellipse cx="39.5" cy="16" rx="6.7" ry="9" transform="rotate(9 39.5 16)"/><ellipse cx="52.5" cy="27" rx="6.4" ry="8.4" transform="rotate(26 52.5 27)"/></g></svg></span>
       <a onClick="{{ goNosotros }}" style="color:{{ nosotrosColor }}">Nosotros</a>
     </nav>
     <button type="button" class="lgm-cart-btn" onClick="{{ openCart }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;background:#65734A;color:#FFFFFF;border:0;border-radius:999px;padding:10px 18px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase" style-hover="background:#4C5836">
@@ -251,6 +276,18 @@ class Component extends DCLogic {
     [80, 400, 1200].forEach(ms => setTimeout(() => this._kick && this._kick(), ms));
   }
 
+  // Dibujo unico de huella, en SVG: se lee nitido incluso a 16px.
+  pawSvg(color) {
+    return h('svg', { viewBox: '0 0 64 64', 'aria-hidden': 'true', focusable: 'false' },
+      h('g', { fill: color }, [
+        h('ellipse', { key: 'p', cx: 32, cy: 46.5, rx: 17.5, ry: 13.5 }),
+        h('ellipse', { key: '1', cx: 11.5, cy: 27, rx: 6.4, ry: 8.4, transform: 'rotate(-26 11.5 27)' }),
+        h('ellipse', { key: '2', cx: 24.5, cy: 16, rx: 6.7, ry: 9, transform: 'rotate(-9 24.5 16)' }),
+        h('ellipse', { key: '3', cx: 39.5, cy: 16, rx: 6.7, ry: 9, transform: 'rotate(9 39.5 16)' }),
+        h('ellipse', { key: '4', cx: 52.5, cy: 27, rx: 6.4, ry: 8.4, transform: 'rotate(26 52.5 27)' })
+      ]));
+  }
+
   benefitsStrip() {
     const items = [
       ['Envíos a todo el país', 'Coordinamos por WhatsApp'],
@@ -258,17 +295,10 @@ class Component extends DCLogic {
       ['Stock corto', 'Pocas unidades de cada cosa'],
       ['Pago flexible', 'Transferencia, tarjeta o efectivo']
     ];
-    const pawBg = [
-      'radial-gradient(ellipse 40% 29% at 50% 77%,#E0A8B6 99%,transparent 100%)',
-      'radial-gradient(ellipse 15% 19% at 19% 43%,#E0A8B6 99%,transparent 100%)',
-      'radial-gradient(ellipse 15% 19% at 39% 22%,#E0A8B6 99%,transparent 100%)',
-      'radial-gradient(ellipse 15% 19% at 61% 22%,#E0A8B6 99%,transparent 100%)',
-      'radial-gradient(ellipse 15% 19% at 81% 43%,#E0A8B6 99%,transparent 100%)'
-    ].join(',');
-
+    const self = this;
     const cells = items.map(function (it) {
       return h('div', { key: it[0], style: { display: 'flex', gap: '12px', alignItems: 'flex-start' } }, [
-        h('span', { key: 'p', style: { width: '18px', height: '18px', flex: 'none', marginTop: '3px', backgroundImage: pawBg } }),
+        h('span', { key: 'p', style: { width: '19px', flex: 'none', marginTop: '2px', lineHeight: 0 } }, self.pawSvg('#BE7E93')),
         h('div', { key: 'd' }, [
           h('p', { key: 't', style: { margin: '0 0 3px', fontSize: '14.5px', color: INK } }, it[0]),
           h('p', { key: 'x', style: { margin: 0, fontSize: '13px', color: BODY } }, it[1])
@@ -307,14 +337,7 @@ class Component extends DCLogic {
       { k: 'a', x: 2.4, y: 88, dx: 1.4,  dy: -17, n: 5, rot: 8,   size: 28, start: 0,  off: 1.7 },
       { k: 'b', x: 92,  y: 12, dx: -1.2, dy: 19,  n: 4, rot: 188, size: 24, start: 10, off: -1.5 }
     ];
-    const pawSvg = () => h('svg', { viewBox: '0 0 100 100', 'aria-hidden': 'true', focusable: 'false' },
-      h('g', { fill: 'currentColor' }, [
-        h('ellipse', { key: 'p', cx: 50, cy: 77, rx: 40, ry: 29 }),
-        h('ellipse', { key: '1', cx: 19, cy: 43, rx: 15, ry: 19 }),
-        h('ellipse', { key: '2', cx: 39, cy: 22, rx: 15, ry: 19 }),
-        h('ellipse', { key: '3', cx: 61, cy: 22, rx: 15, ry: 19 }),
-        h('ellipse', { key: '4', cx: 81, cy: 43, rx: 15, ry: 19 })
-      ]));
+    const pawSvg = () => this.pawSvg('currentColor');
     const paws = [];
     TRACKS.forEach(t => {
       for (let i = 0; i < t.n; i++) {
@@ -495,9 +518,13 @@ class Component extends DCLogic {
     const all = L.products();
     return h('div', { key: 'inicio', style: { animation: 'lgm-in .28s ease both' } }, [
       h('div', { key: 'hero', style: { position: 'relative', overflow: 'hidden', background: '#1A1210' } }, [
+        h('img', {
+          key: 'foto', className: 'lgm-hero-photo', src: './assets/madrid-granvia.png', alt: '', 'aria-hidden': 'true',
+          style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
+        }),
         h('video', {
-          key: 'v', src: './assets/hero-madrid.mp4', autoPlay: true, loop: true, muted: true, playsInline: true,
-          poster: './assets/madrid-granvia.png',
+          key: 'v', className: 'lgm-hero-video', src: './assets/hero-madrid.mp4', autoPlay: true, loop: true, muted: true, playsInline: true,
+          poster: './assets/hero-poster.jpg',
           ref: (el) => this.bindVideo(el),
           style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
         }),
@@ -620,7 +647,7 @@ class Component extends DCLogic {
 
     const pill = (label, active, onClick) => h('button', {
       key: label, type: 'button', onClick: onClick,
-      style: { cursor: 'pointer', border: 0, background: 'transparent', padding: 0, fontSize: '17px', textAlign: 'left', color: active ? ROSE : INK }
+      style: { cursor: 'pointer', border: 0, background: 'transparent', padding: 0, fontSize: '17px', textAlign: 'left', color: active ? '#A8336B' : INK, fontWeight: active ? 500 : 400 }
     }, label);
 
     return h('div', { key: 'productos', style: { animation: 'lgm-in .28s ease both' } }, [
@@ -654,8 +681,11 @@ class Component extends DCLogic {
           key: 'body', className: 'lgm-shop',
           style: { display: 'grid', gridTemplateColumns: 'minmax(0,200px) minmax(0,1fr)', gap: 'clamp(24px,3vw,44px)', alignItems: 'start', marginTop: 'clamp(28px,3.6vw,44px)' }
         }, [
-          h('aside', { key: 'side', className: 'lgm-shopside', style: { display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start', minWidth: 0 } }, [
-            h('p', { key: 't', style: { margin: '0 0 4px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: INK } }, 'Categorías'),
+          h('aside', {
+            key: 'side', className: 'lgm-shopside',
+            style: { display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start', minWidth: 0, boxSizing: 'border-box', background: '#F6DCE3', border: '1px solid #E7C3CE', borderRadius: '16px', padding: '20px 18px' }
+          }, [
+            h('p', { key: 't', style: { margin: '0 0 6px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#8E4258' } }, 'Categorías'),
             pill('Todas', !cat, () => this.setState({ cat: null }))
           ].concat(cats.map(c => pill(c, cat === c, () => this.setState({ cat: c }))))),
           h('div', { key: 'list', style: { minWidth: 0 } }, [
@@ -736,6 +766,11 @@ class Component extends DCLogic {
 
   viewNosotros() {
     const stats = [['100%', 'Productos originales, con caja y sellado de fábrica'], ['1 a 3', 'Unidades por pieza: stock corto y rotativo'], ['24 h', 'Respondemos consultas por WhatsApp'], ['7 días', 'Para cambios, con el producto sin uso']];
+    const collage = [
+      ['./assets/logo-gata-madrid.jpg', 'La gata', 'Negra, con cascabel dorado'],
+      ['./assets/madrid-granvia.png', 'Madrid', 'La otra debilidad de la casa'],
+      ['./assets/p-chenson-tote.jpg', 'Lo que elegimos', 'Pocas piezas, una por una']
+    ];
     const steps = [
       ['01', 'Elegimos a mano', 'Revisamos sellos, vencimientos y detalles de empaque. Sumamos solo lo que compraríamos para nosotras.'],
       ['02', 'Publicamos en la tienda', 'Cada producto se publica con fotos reales, ficha y precio en guaraníes. Si algo se agota, lo damos de baja.'],
@@ -750,9 +785,26 @@ class Component extends DCLogic {
         h('p', { key: 'p2', style: { margin: 0, maxWidth: '68ch', fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. El nombre viene de dos debilidades de la casa: los gatos y Madrid.')
       ], { paddingTop: 'clamp(40px,6vw,76px)' }),
       this.section([
+        h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '14px' } },
+          collage.map(([src, t, d], i) => h('div', {
+            key: t, className: 'lgm-zoom lgm-lift lgm-cat', 'data-reveal': '1',
+            style: { position: 'relative', overflow: 'hidden', borderRadius: '14px', height: 'clamp(230px,26vw,300px)', background: SOFT, transitionDelay: (i * 110) + 'ms' }
+          }, [
+            h('img', { key: 'i', src: src, alt: '', 'aria-hidden': 'true', style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' } }),
+            h('div', { key: 'v', className: 'lgm-veil', style: { position: 'absolute', inset: 0, opacity: .84, background: 'linear-gradient(180deg,rgba(20,14,12,0) 34%,rgba(20,14,12,.82) 100%)' } }),
+            h('div', { key: 'c', className: 'lgm-capt', style: { position: 'absolute', left: '16px', right: '16px', bottom: '15px', color: '#FFFFFF' } }, [
+              h('p', { key: 't', style: { margin: '0 0 3px', fontFamily: serif, fontSize: '25px' } }, t),
+              h('p', { key: 'd', style: { margin: 0, fontSize: '12.5px', letterSpacing: '.1em', textTransform: 'uppercase', opacity: .85 } }, d)
+            ])
+          ])))
+      ], { paddingTop: 'clamp(34px,4.5vw,56px)' }),
+      this.section([
         h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: '18px' } },
-          stats.map(([n, t]) => h('div', { key: n, style: { borderTop: '1px solid #E3D3CE', paddingTop: '16px' } }, [
-            h('p', { key: 'n', style: { margin: '0 0 6px', fontFamily: serif, fontSize: '34px', color: ROSE } }, n),
+          stats.map(([n, t], i) => h('div', {
+            key: n, 'data-reveal': '1',
+            style: { borderTop: '1px solid #E3D3CE', paddingTop: '16px', transitionDelay: (i * 90) + 'ms' }
+          }, [
+            h('p', { key: 'n', style: { margin: '0 0 6px', fontFamily: serif, fontSize: '38px', lineHeight: 1, color: ROSE } }, n),
             h('p', { key: 't', style: { margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: BODY } }, t)
           ])))
       ], { paddingTop: 'clamp(40px,5vw,64px)' }),
@@ -760,7 +812,10 @@ class Component extends DCLogic {
         this.eyebrow('— Cómo trabajamos'),
         h('h2', { key: 'h', style: { margin: '0 0 26px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,44px)', lineHeight: 1.12, color: INK } }, 'De la selección a tu puerta, en cuatro pasos'),
         h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: '18px' } },
-          steps.map(([n, t, d]) => h('article', { key: n, style: { background: SOFT, border: '1px solid ' + LINE, borderRadius: '16px', padding: '22px 20px' } }, [
+          steps.map(([n, t, d], i) => h('article', {
+            key: n, className: 'lgm-lift', 'data-reveal': '1',
+            style: { background: SOFT, border: '1px solid ' + LINE, borderRadius: '16px', padding: '22px 20px', transitionDelay: (i * 90) + 'ms' }
+          }, [
             h('p', { key: 'n', style: { margin: '0 0 10px', fontSize: '12px', letterSpacing: '.2em', color: '#6E7B53' } }, n),
             h('h3', { key: 't', style: { margin: '0 0 10px', fontFamily: serif, fontWeight: 600, fontSize: '22px', color: INK } }, t),
             h('p', { key: 'd', style: { margin: 0, fontSize: '14.5px', lineHeight: 1.7, color: BODY } }, d)
