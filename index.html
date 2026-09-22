@@ -51,6 +51,10 @@
   }
 
   /* --- desplegable de orden: reemplaza al <select> del sistema --- */
+  .lgm-about-top { display:grid; grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);
+    gap:clamp(28px,4vw,56px); align-items:center }
+  @media (max-width: 860px){ .lgm-about-top { grid-template-columns:minmax(0,1fr) !important } }
+
   .lgm-sort { position:relative; display:inline-block }
   .lgm-sort-btn { display:inline-flex; align-items:center; gap:9px; border:0; background:transparent;
     cursor:pointer; padding:9px 14px; border-radius:999px; font-size:12px; letter-spacing:.12em;
@@ -79,6 +83,7 @@
   .lgm-paw { display:inline-block; flex:none; line-height:0; width:19px;
     transition:transform .35s cubic-bezier(.22,.7,.2,1) }
   .lgm-paw svg { display:block; width:100%; height:auto }
+  .lgm-paw-logo { width:23px }
   nav:hover .lgm-paw { transform:rotate(-10deg) scale(1.12) }
 
   /* --- huellitas de fondo: recorridos que se encienden una tras otra --- */
@@ -149,7 +154,7 @@
 
   <header class="lgm-head" style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:16px 20px;flex-wrap:wrap;padding:14px 24px;background:rgba(253,251,248,.94);backdrop-filter:blur(8px);border-bottom:1px solid #EDDCD8">
     <a class="lgm-brand" onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;color:#3A2B26">
-      <span style="width:22px;height:22px;display:block;flex:none;background-image:radial-gradient(ellipse 34% 26% at 50% 72%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 22% 40%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 41% 25%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 60% 25%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 79% 40%,#A85E72 99%,transparent 100%)"></span>
+      <span class="lgm-paw lgm-paw-logo" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><g fill="#A85E72"><ellipse cx="32" cy="46.5" rx="17.5" ry="13.5"/><ellipse cx="11.5" cy="27" rx="6.4" ry="8.4" transform="rotate(-26 11.5 27)"/><ellipse cx="24.5" cy="16" rx="6.7" ry="9" transform="rotate(-9 24.5 16)"/><ellipse cx="39.5" cy="16" rx="6.7" ry="9" transform="rotate(9 39.5 16)"/><ellipse cx="52.5" cy="27" rx="6.4" ry="8.4" transform="rotate(26 52.5 27)"/></g></svg></span>
       <span class="lgm-brand-txt" style="font-family:'Cormorant Garamond',serif;font-size:19px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap">La Gata de Madrid</span>
     </a>
     <nav class="lgm-nav" style="display:flex;align-items:center;flex-wrap:wrap;flex:1 1 260px;justify-content:center;min-width:0;gap:12px;font-size:13px;letter-spacing:.08em;text-transform:uppercase">
@@ -800,7 +805,6 @@ class Component extends DCLogic {
   viewNosotros() {
     const stats = [['100%', 'Productos originales, con caja y sellado de fábrica'], ['1 a 3', 'Unidades por pieza: stock corto y rotativo'], ['24 h', 'Respondemos consultas por WhatsApp'], ['7 días', 'Para cambios, con el producto sin uso']];
     const collage = [
-      ['./assets/logo-gata-madrid.jpg', 'La gata', 'Negra, con cascabel dorado'],
       ['./assets/madrid-granvia.png', 'Madrid', 'La otra debilidad de la casa'],
       ['./assets/p-chenson-tote.jpg', 'Lo que elegimos', 'Pocas piezas, una por una']
     ];
@@ -812,10 +816,21 @@ class Component extends DCLogic {
     ];
     return h('div', { key: 'nosotros', style: { animation: 'lgm-in .28s ease both' } }, [
       this.section([
-        this.eyebrow('— Nosotros'),
-        h('h1', { key: 'h', style: { margin: '0 0 20px', maxWidth: '28ch', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(32px,4.6vw,58px)', lineHeight: 1.08, color: INK } }, 'Una gata negra, un cascabel dorado y muchas ganas de encontrar cosas lindas.'),
-        h('p', { key: 'p1', style: { margin: '0 0 16px', maxWidth: '68ch', fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'Empezamos buscando un bolso para uso propio y terminamos armando una tienda online. Vendemos por Instagram y WhatsApp: perfumería original, tecnología, bolsos y accesorios, cada cosa elegida una por una.'),
-        h('p', { key: 'p2', style: { margin: 0, maxWidth: '68ch', fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. El nombre viene de dos debilidades de la casa: los gatos y Madrid.')
+        h('div', { key: 'top', className: 'lgm-about-top' }, [
+          h('div', { key: 't' }, [
+            this.eyebrow('— Nosotros'),
+            h('h1', { key: 'h', style: { margin: '0 0 20px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(32px,4.2vw,52px)', lineHeight: 1.08, color: INK } }, 'Una gata negra, un cascabel dorado y muchas ganas de encontrar cosas lindas.'),
+            h('p', { key: 'p1', style: { margin: '0 0 16px', fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'Empezamos buscando un bolso para uso propio y terminamos armando una tienda online. Vendemos por Instagram y WhatsApp: perfumería original, tecnología, bolsos y accesorios, cada cosa elegida una por una.'),
+            h('p', { key: 'p2', style: { margin: 0, fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. El nombre viene de dos debilidades de la casa: los gatos y Madrid.')
+          ]),
+          h('div', {
+            key: 'i', className: 'lgm-zoom', 'data-reveal': '1',
+            style: { position: 'relative', overflow: 'hidden', borderRadius: '18px', height: 'clamp(300px,33vw,430px)', background: SOFT, border: '1px solid ' + LINE }
+          }, h('img', {
+            src: './assets/logo-gata-madrid.jpg', alt: '', 'aria-hidden': 'true',
+            style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' }
+          }))
+        ])
       ], { paddingTop: 'clamp(40px,6vw,76px)' }),
       this.section([
         h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '14px' } },
