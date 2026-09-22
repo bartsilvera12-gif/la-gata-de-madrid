@@ -49,6 +49,21 @@
     .lgm-zoom img, .lgm-lift, .lgm-veil, .lgm-capt, .lgm-paw { transition:none !important; transform:none !important; filter:none !important }
   }
 
+  /* --- huellitas de fondo: recorridos que se encienden una tras otra --- */
+  .lgm-tracks { position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden }
+  .lgm-track-paw { position:absolute; display:block; color:#CE9FAD; opacity:0;
+    animation-name:lgm-track; animation-timing-function:ease-in-out;
+    animation-iteration-count:infinite; animation-fill-mode:both }
+  .lgm-track-paw svg { display:block; width:100%; height:auto }
+  @keyframes lgm-track {
+    0%   { opacity:0;   scale:.7 }
+    3%   { opacity:.24; scale:1 }
+    28%  { opacity:.24; scale:1 }
+    38%  { opacity:0;   scale:1 }
+    100% { opacity:0;   scale:1 }
+  }
+  @media (prefers-reduced-motion: reduce){ .lgm-tracks { display:none } }
+
   /* --- adaptacion a celular --- */
   img, video { max-width:100% }
   @media (hover: none) {
@@ -69,6 +84,7 @@
     .lgm-nav { order:3; flex:1 0 100% !important; justify-content:center !important; gap:14px !important }
   }
   @media (max-width: 720px){
+    .lgm-track-paw { width:19px !important }
     .lgm-sec { padding-left:18px !important; padding-right:18px !important }
     .lgm-promo-in { padding-left:18px !important; padding-right:18px !important }
     .lgm-head { padding:10px 16px !important; gap:8px 12px !important }
@@ -116,11 +132,13 @@
     </button>
   </header>
 
-  <main>{{ viewEl }}</main>
+  {{ pawsEl }}
+
+  <main style="position:relative;z-index:1">{{ viewEl }}</main>
 
   {{ overlayEl }}
 
-  <footer class="lgm-foot-outer" style="position:relative;border-top:1px solid #EDDCD8;background:#FCEFF0;padding:48px 28px 26px;margin-top:64px">
+  <footer class="lgm-foot-outer" style="position:relative;z-index:1;border-top:1px solid #EDDCD8;background:#FCEFF0;padding:48px 28px 26px;margin-top:64px">
     <div class="lgm-foot" style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(220px,1.4fr) auto auto minmax(0,auto);gap:24px clamp(24px,4vw,56px);align-items:start">
       <div>
         <p style="margin:0 0 12px;font-family:'Cormorant Garamond',serif;font-size:27px;letter-spacing:.06em;color:#3A2B26">La Gata de Madrid.</p>
@@ -279,6 +297,42 @@ class Component extends DCLogic {
     });
   }
 
+  // Huellitas de fondo. Cada recorrido enciende sus huellas una tras otra,
+  // como si la gata cruzara la pantalla, y se apaga antes de volver a empezar.
+  pawsLayer() {
+    const TRACKS = [
+      { k: 'a', x: 2.4, y: 90, dx: 0.9,  dy: -10.4, n: 8, rot: 8,   size: 28, start: 0,   off: 1.7 },
+      { k: 'b', x: 92,  y: 10, dx: -0.8, dy: 10.6,  n: 8, rot: 188, size: 24, start: 7,   off: -1.5 },
+      { k: 'c', x: 24,  y: 62, dx: 9,    dy: -3.4,  n: 5, rot: 76,  size: 20, start: 14,  off: 1.6 }
+    ];
+    const pawSvg = () => h('svg', { viewBox: '0 0 100 100', 'aria-hidden': 'true', focusable: 'false' },
+      h('g', { fill: 'currentColor' }, [
+        h('ellipse', { key: 'p', cx: 50, cy: 77, rx: 40, ry: 29 }),
+        h('ellipse', { key: '1', cx: 19, cy: 43, rx: 15, ry: 19 }),
+        h('ellipse', { key: '2', cx: 39, cy: 22, rx: 15, ry: 19 }),
+        h('ellipse', { key: '3', cx: 61, cy: 22, rx: 15, ry: 19 }),
+        h('ellipse', { key: '4', cx: 81, cy: 43, rx: 15, ry: 19 })
+      ]));
+    const paws = [];
+    TRACKS.forEach(t => {
+      for (let i = 0; i < t.n; i++) {
+        const side = i % 2 ? t.off : 0;
+        paws.push(h('span', {
+          key: t.k + i, className: 'lgm-track-paw',
+          style: {
+            left: (t.x + i * t.dx + side) + '%',
+            top: (t.y + i * t.dy) + '%',
+            width: t.size + 'px',
+            transform: 'rotate(' + t.rot + 'deg)',
+            animationDuration: '21s',
+            animationDelay: (t.start + i * 0.4).toFixed(2) + 's'
+          }
+        }, pawSvg()));
+      }
+    });
+    return h('div', { className: 'lgm-tracks', 'aria-hidden': 'true' }, paws);
+  }
+
   gataBand() {
     const eyeX = this.state.eyeX || 0, eyeY = this.state.eyeY || 0;
     const eye = (side) => h('div', {
@@ -301,7 +355,7 @@ class Component extends DCLogic {
     return h('div', {
       key: 'band', className: 'lgm-band',
       style: {
-        background: '#FDFBF8', borderTop: '1px solid ' + LINE, borderBottom: '1px solid ' + LINE,
+        background: 'transparent', borderTop: '1px solid ' + LINE, borderBottom: '1px solid ' + LINE,
         padding: '6px 24px 0', overflow: 'hidden',
         display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'center', gap: 'clamp(4px,1vw,16px)'
       }
@@ -476,14 +530,17 @@ class Component extends DCLogic {
             ])
           ])))
       ], { paddingTop: 'clamp(48px,6vw,76px)' }),
-      this.section([
+      h('div', {
+        key: 'destacados',
+        style: { background: '#FDF1E4', marginTop: 'clamp(48px,6vw,76px)', paddingTop: 'clamp(40px,5vw,64px)', paddingBottom: 'clamp(44px,5.5vw,72px)' }
+      }, this.section([
         this.eyebrow('— Destacados'),
         h('div', { key: 'head', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '26px' } }, [
           h('h2', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(30px,4vw,48px)', lineHeight: 1.1, color: INK } }, 'Lo que más se busca'),
           h('a', { key: 'a', onClick: () => this.go('#/productos'), style: { fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', borderBottom: '1px solid #E0A8B6', paddingBottom: '3px' } }, 'Ver todo')
         ]),
         this.grid(all.slice(0, 4))
-      ], { paddingTop: 'clamp(48px,6vw,76px)' }),
+      ])),
       this.section([
         this.eyebrow('— Perfumería'),
         h('div', { key: 'head', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '26px' } }, [
@@ -823,6 +880,7 @@ class Component extends DCLogic {
       : this.viewInicio();
     const count = Object.keys(this.state.cart).reduce((s, k) => s + this.state.cart[k], 0);
     return {
+      pawsEl: this.pawsLayer(),
       viewEl: window.LGM ? view : null,
       overlayEl: this.state.panel === 'cart' && window.LGM ? this.cartPanel() : null,
       cartCount: count,
