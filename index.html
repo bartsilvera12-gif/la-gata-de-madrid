@@ -69,8 +69,8 @@
     .lgm-nav { order:3; flex:1 0 100% !important; justify-content:center !important; gap:14px !important }
   }
   @media (max-width: 720px){
-    .lgm-skyline { height:30px !important }
     .lgm-sec { padding-left:18px !important; padding-right:18px !important }
+    .lgm-promo-in { padding-left:18px !important; padding-right:18px !important }
     .lgm-head { padding:10px 16px !important; gap:8px 12px !important }
     .lgm-brand .lgm-brand-txt { font-size:16px !important; letter-spacing:.05em !important }
     .lgm-nav { order:3; flex:1 0 100% !important; justify-content:space-between !important; gap:6px !important }
@@ -97,11 +97,6 @@
 </helmet>
 
 <div style="font-family:'Jost',system-ui,sans-serif;color:#3A2B26;background:#FDFBF8;min-height:100vh">
-
-  <div class="lgm-skyline" style="position:relative;overflow:hidden;background:#6E7B53;height:38px">
-    <img src="./assets/skyline-madrid.png" alt="" aria-hidden="true" style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:100%;width:auto;max-width:92%;object-fit:contain;object-position:center bottom;display:block">
-    <img src="./assets/gata-sentada-blanca.png" alt="" aria-hidden="true" style="position:absolute;right:22px;bottom:0;z-index:2;height:96%;width:auto;display:block">
-  </div>
 
   <header class="lgm-head" style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:16px 20px;flex-wrap:wrap;padding:14px 24px;background:rgba(253,251,248,.94);backdrop-filter:blur(8px);border-bottom:1px solid #EDDCD8">
     <a class="lgm-brand" onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;color:#3A2B26">
@@ -497,9 +492,19 @@ class Component extends DCLogic {
       ], { paddingTop: 'clamp(48px,6vw,76px)' }),
       h('div', {
         key: 'promo',
-        style: { marginTop: 'clamp(48px,6vw,76px)', background: '#6E7B53', color: '#FFFFFF' }
-      }, h('div', {
-        style: { maxWidth: '1240px', margin: '0 auto', padding: 'clamp(32px,4.5vw,60px) 28px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '22px' }
+        style: { position: 'relative', overflow: 'hidden', marginTop: 'clamp(48px,6vw,76px)', background: '#6E7B53', color: '#FFFFFF' }
+      }, [
+        h('img', {
+          key: 'sky', src: './assets/skyline-madrid.png', alt: '', 'aria-hidden': 'true',
+          style: { position: 'absolute', left: '50%', bottom: 0, transform: 'translateX(-50%)', height: 'clamp(58px,8vw,116px)', width: 'auto', maxWidth: '92%', objectFit: 'contain', objectPosition: 'center bottom', display: 'block', pointerEvents: 'none' }
+        }),
+        h('img', {
+          key: 'cat', src: './assets/gata-sentada-blanca.png', alt: '', 'aria-hidden': 'true',
+          style: { position: 'absolute', right: 'clamp(16px,4vw,54px)', bottom: 0, zIndex: 2, height: 'clamp(68px,9.4vw,136px)', width: 'auto', display: 'block', pointerEvents: 'none' }
+        }),
+        h('div', {
+        key: 'c', className: 'lgm-promo-in',
+        style: { position: 'relative', zIndex: 3, maxWidth: '1240px', margin: '0 auto', padding: 'clamp(32px,4.5vw,60px) 28px calc(clamp(58px,8vw,116px) + clamp(26px,3vw,44px))', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '22px' }
       }, [
         h('div', { key: 'l' }, [
           h('p', { key: 'e', style: { margin: '0 0 10px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#DCE4C9' } }, 'Cupón GATA10'),
@@ -510,7 +515,7 @@ class Component extends DCLogic {
           key: 'a', href: 'https://wa.me/595981772872?text=' + encodeURIComponent('Hola! Quiero usar el cupón GATA10'),
           style: { background: '#FDFBF8', color: INK, padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' }
         }, 'Usar el cupón')
-      ])),
+      ])]),
       this.section([
         this.eyebrow('— Tecnología y accesorios'),
         h('div', { key: 'head', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '26px' } }, [
