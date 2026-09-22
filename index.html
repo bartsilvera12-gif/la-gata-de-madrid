@@ -50,26 +50,6 @@
     .lgm-zoom img, .lgm-lift, .lgm-veil, .lgm-capt, .lgm-paw { transition:none !important; transform:none !important; filter:none !important }
   }
 
-  /* --- portada: la foto de Gran Via y el video se alternan --- */
-  .lgm-hero-photo { animation:lgm-hero-foto 18s ease-in-out infinite }
-  .lgm-hero-video { opacity:0; animation:lgm-hero-video 18s ease-in-out infinite }
-  @keyframes lgm-hero-foto {
-    0%   { opacity:1; scale:1 }
-    40%  { opacity:1; scale:1.07 }
-    48%  { opacity:0; scale:1.08 }
-    92%  { opacity:0; scale:1 }
-    100% { opacity:1; scale:1 }
-  }
-  @keyframes lgm-hero-video {
-    0%,40% { opacity:0 }
-    48%,92%{ opacity:1 }
-    100%   { opacity:0 }
-  }
-  @media (prefers-reduced-motion: reduce){
-    .lgm-hero-photo { animation:none; opacity:0 }
-    .lgm-hero-video { animation:none; opacity:1 }
-  }
-
   /* --- huella de gata: dibujo unico, usado en el menu y en la franja --- */
   .lgm-paw { display:inline-block; flex:none; line-height:0; width:19px;
     transition:transform .35s cubic-bezier(.22,.7,.2,1) }
@@ -518,12 +498,8 @@ class Component extends DCLogic {
     const all = L.products();
     return h('div', { key: 'inicio', style: { animation: 'lgm-in .28s ease both' } }, [
       h('div', { key: 'hero', style: { position: 'relative', overflow: 'hidden', background: '#1A1210' } }, [
-        h('img', {
-          key: 'foto', className: 'lgm-hero-photo', src: './assets/madrid-granvia.png', alt: '', 'aria-hidden': 'true',
-          style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
-        }),
         h('video', {
-          key: 'v', className: 'lgm-hero-video', src: './assets/hero-madrid.mp4', autoPlay: true, loop: true, muted: true, playsInline: true,
+          key: 'v', src: './assets/hero-madrid.mp4', autoPlay: true, loop: true, muted: true, playsInline: true,
           poster: './assets/hero-poster.jpg',
           ref: (el) => this.bindVideo(el),
           style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
