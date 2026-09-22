@@ -785,7 +785,11 @@ class Component extends DCLogic {
         lines.length === 0
           ? h('p', { style: { margin: 0, fontSize: '15.5px', lineHeight: 1.7, color: BODY } }, 'Tu carrito está vacío. Agregá productos y te los reservamos.')
           : lines.map(l => h('div', { key: l.p.id, style: { display: 'flex', gap: '14px', paddingBottom: '18px', borderBottom: '1px solid ' + LINE } }, [
-              h('img', { key: 'i', src: (l.p.gallery || [])[0], alt: l.p.name, style: { width: '76px', height: '86px', objectFit: 'cover', background: SOFT, flex: 'none' } }),
+              h('div', { key: 'i', style: { width: '76px', height: '86px', flex: 'none', overflow: 'hidden', background: SOFT } },
+                h('img', {
+                  src: (l.p.gallery || [])[0], alt: '',
+                  style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' }
+                })),
               h('div', { key: 'd', style: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '6px' } }, [
                 h('a', { key: 'n', onClick: () => { this.setState({ panel: null }); this.go('#/producto/' + l.p.id); }, style: { fontFamily: serif, fontSize: '19px', color: INK } }, l.p.name),
                 h('p', { key: 'p', style: { margin: 0, fontSize: '14px', color: ROSE } }, L.gs(l.p.price)),
