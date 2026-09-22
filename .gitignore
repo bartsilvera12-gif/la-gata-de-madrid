@@ -1,0 +1,11 @@
+# Estado interno del editor
+.image-slots.state.json
+.thumbnail
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Vercel
+.vercel

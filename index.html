@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Gata de Madrid — Tienda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="./catalogo.js"></script>
+<style>
+  body { margin:0; background:#FDFBF8; -webkit-font-smoothing:antialiased; }
+  a { color:#A85E72; text-decoration:none; cursor:pointer; }
+  a:hover { color:#5F6B47; }
+  ::selection { background:#F0DCDF; color:#3A2B26; }
+  input, select, button { font-family:'Jost',system-ui,sans-serif; }
+  input:focus, select:focus { outline:none; border-color:#C08292; }
+  html.lgm-reveal [data-reveal] { opacity:0; transform:translateY(18px); transition:opacity .5s ease, transform .5s cubic-bezier(.22,.7,.2,1); }
+  html.lgm-reveal [data-reveal].is-in { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){ [data-reveal]{ opacity:1 !important; transform:none !important; transition:none } }
+  @keyframes lgm-in { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:none } }
+  @keyframes lgm-blink { 0%,62%{ transform:scaleY(1) } 66%{ transform:scaleY(.08) } 70%,86%{ transform:scaleY(1) } 89%{ transform:scaleY(.08) } 93%,100%{ transform:scaleY(1) } }
+  @keyframes lgm-fold { from { opacity:0; transform:rotateX(-92deg) } 60% { opacity:1 } to { opacity:1; transform:none } }
+  @keyframes lgm-crease { from { opacity:.55 } to { opacity:0 } }
+  .lgm-fold-seg { display:inline-block; perspective:700px; transform-style:preserve-3d; vertical-align:baseline }
+  .lgm-fold-seg > span { position:relative; display:inline-block; transform-origin:50% 0%; transform-style:preserve-3d; backface-visibility:hidden; animation:lgm-fold .65s cubic-bezier(.2,.8,.2,1) both }
+  .lgm-fold-seg > span::after { content:''; position:absolute; inset:-.08em -.02em; pointer-events:none; border-radius:.08em; mix-blend-mode:multiply; background:linear-gradient(180deg,rgba(0,0,0,.58) 0%,rgba(0,0,0,.22) 42%,rgba(255,255,255,.26) 100%); animation:lgm-crease .65s linear both; animation-delay:inherit }
+  @media (prefers-reduced-motion: reduce){ .lgm-fold-seg > span, .lgm-fold-seg > span::after { animation:none !important; opacity:1 !important; transform:none !important } }
+  @keyframes lgm-sway { 0%,100%{ transform:rotate(-6deg) } 50%{ transform:rotate(6deg) } }
+</style>
+</helmet>
+
+<div style="font-family:'Jost',system-ui,sans-serif;color:#3A2B26;background:#FDFBF8;min-height:100vh">
+
+  <div style="position:relative;overflow:hidden;background:#6E7B53;height:52px">
+    <img src="./assets/skyline-madrid.png" alt="" aria-hidden="true" style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:100%;width:auto;max-width:92%;object-fit:contain;object-position:center bottom;display:block">
+    <img src="./assets/gata-sentada-blanca.png" alt="" aria-hidden="true" style="position:absolute;right:26px;bottom:0;z-index:2;height:86%;width:auto;display:block">
+  </div>
+
+  <header style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:16px 20px;flex-wrap:wrap;padding:14px 24px;background:rgba(253,251,248,.94);backdrop-filter:blur(8px);border-bottom:1px solid #EDDCD8">
+    <a onClick="{{ goHome }}" style="display:flex;align-items:center;gap:10px;color:#3A2B26">
+      <span style="width:22px;height:22px;display:block;flex:none;background-image:radial-gradient(ellipse 34% 26% at 50% 72%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 22% 40%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 41% 25%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 60% 25%,#A85E72 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 79% 40%,#A85E72 99%,transparent 100%)"></span>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:19px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap">La Gata de Madrid</span>
+    </a>
+    <nav style="display:flex;align-items:center;flex-wrap:wrap;flex:1 1 260px;justify-content:center;min-width:0;gap:12px;font-size:13px;letter-spacing:.08em;text-transform:uppercase">
+      <a onClick="{{ goHome }}" style="color:{{ inicioColor }}">Inicio</a>
+      <span style="width:13px;height:13px;display:inline-block;flex:none;background-image:radial-gradient(ellipse 34% 26% at 50% 72%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 22% 40%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 41% 25%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 60% 25%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 79% 40%,#E0A8B6 99%,transparent 100%)"></span>
+      <a onClick="{{ goProductos }}" style="color:{{ productosColor }}">Productos</a>
+      <span style="width:13px;height:13px;display:inline-block;flex:none;background-image:radial-gradient(ellipse 34% 26% at 50% 72%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 22% 40%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 41% 25%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 60% 25%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 79% 40%,#E0A8B6 99%,transparent 100%)"></span>
+      <a onClick="{{ goNosotros }}" style="color:{{ nosotrosColor }}">Nosotros</a>
+    </nav>
+    <button type="button" onClick="{{ openCart }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;background:#65734A;color:#FFFFFF;border:0;border-radius:999px;padding:10px 18px;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase" style-hover="background:#4C5836">
+      <span>Carrito</span>
+      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#FFFFFF;color:#3A2B26;font-size:12px;letter-spacing:0">{{ cartCount }}</span>
+    </button>
+  </header>
+
+  <main>{{ viewEl }}</main>
+
+  {{ overlayEl }}
+
+  <footer style="position:relative;border-top:1px solid #EDDCD8;background:#FCEFF0;padding:48px 28px 26px;margin-top:64px">
+    <div style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(220px,1.4fr) auto auto minmax(0,auto);gap:24px clamp(24px,4vw,56px);align-items:start">
+      <div>
+        <p style="margin:0 0 12px;font-family:'Cormorant Garamond',serif;font-size:27px;letter-spacing:.06em;color:#3A2B26">La Gata de Madrid.</p>
+        <p style="margin:0;max-width:34ch;font-size:15px;line-height:1.7;color:#5A5350">Perfumería, tecnología, bolsos y más. Productos originales, elegidos con ojo de gata.</p>
+      </div>
+      <div>
+        <p style="margin:0 0 14px;font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;color:#5F6B47">Tienda</p>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:15px">
+          <a onClick="{{ goHome }}">Inicio</a>
+          <a onClick="{{ goProductos }}">Productos</a>
+          <a onClick="{{ goNosotros }}">Nosotros</a>
+          <a onClick="{{ goPrivacidad }}">Privacidad</a>
+        </div>
+      </div>
+      <div>
+        <p style="margin:0 0 14px;font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;color:#5F6B47">Contacto</p>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:15px;color:#5A5350">
+          <a href="mailto:hola@lagatademadrid.com">hola@lagatademadrid.com</a>
+          <a href="https://wa.me/595981772872">+595 981 772 872</a>
+        </div>
+      </div>
+      <img src="./assets/gato-echado.png" alt="" aria-hidden="true" style="justify-self:end;align-self:end;width:clamp(150px,17vw,240px);height:auto;display:block;pointer-events:none">
+    </div>
+    <div style="max-width:1240px;margin:32px auto 0;padding-top:18px;border-top:1px solid #E5D3CE;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;font-size:12.5px;color:#7A6E6A">
+      <span>© 2026 La Gata de Madrid — Todos los derechos reservados</span>
+      <a href="https://neura.com.py" target="_blank" rel="noopener" style="color:#7A6E6A">Desarrollado por Neura</a>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240}}">
+const h = React.createElement;
+const ROSE = '#A85E72', INK = '#3A2B26', BODY = '#5A5350', OLIVE = '#5F6B47', LINE = '#EDDCD8', SOFT = '#FCEFF0';
+const serif = "'Cormorant Garamond',serif";
+
+function parseHash() {
+  const raw = (location.hash || '').replace(/^#\/?/, '');
+  if (!raw) return { view: 'inicio' };
+  const parts = raw.split('/');
+  if (parts[0] === 'producto' && parts[1]) return { view: 'producto', id: decodeURIComponent(parts[1]) };
+  if (parts[0] === 'productos') return { view: 'productos', cat: parts[1] ? decodeURIComponent(parts[1]) : null };
+  if (parts[0] === 'nosotros') return { view: 'nosotros' };
+  if (parts[0] === 'privacidad') return { view: 'privacidad' };
+  if (parts[0] === 'carrito') return { view: 'productos', cart: true };
+  return { view: 'inicio' };
+}
+
+class Component extends DCLogic {
+  state = { route: { view: 'inicio' }, cart: {}, panel: null, cat: null, query: '', applied: '', sort: 'recientes', shot: 0 };
+
+  componentDidMount() {
+    const L = window.LGM;
+    const r = parseHash();
+    this.setState({ route: r, cart: L ? L.readCart() : {}, panel: r.cart ? 'cart' : null });
+    this._onHash = () => {
+      const next = parseHash();
+      this.setState({ route: next, shot: 0, panel: next.cart ? 'cart' : null, cat: next.cat || null });
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener('hashchange', this._onHash);
+    this._eyes = (e) => {
+      const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+      const clamp = (v) => Math.max(-1, Math.min(1, v));
+      this.setState({
+        eyeX: Math.round(clamp((e.clientX - cx) / (window.innerWidth * 0.34)) * 7),
+        eyeY: Math.round(clamp((e.clientY - cy) / (window.innerHeight * 0.34)) * 5)
+      });
+    };
+    window.addEventListener('mousemove', this._eyes, { passive: true });
+    setTimeout(() => this.observeReveals(), 30);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('hashchange', this._onHash);
+    window.removeEventListener('mousemove', this._eyes);
+  }
+
+  bindVideo(el) {
+    if (!el) { this._video = null; return; }
+    if (this._video === el) { this._kick(); return; }
+    this._video = el;
+    el.muted = true;
+    el.defaultMuted = true;
+    el.setAttribute('muted', '');
+    el.setAttribute('playsinline', '');
+    el.loop = true;
+    this._kick = () => {
+      const v = this._video;
+      if (!v) return;
+      v.muted = true;
+      if (v.paused) {
+        const p = v.play();
+        if (p && p.catch) p.catch(() => {});
+      }
+    };
+    ['loadeddata', 'canplay', 'canplaythrough', 'pause', 'stalled'].forEach(ev => el.addEventListener(ev, this._kick));
+    if (!this._kickHooked) {
+      this._kickHooked = true;
+      ['pointerdown', 'touchstart', 'keydown', 'scroll', 'mousemove'].forEach(ev =>
+        window.addEventListener(ev, () => this._kick && this._kick(), { passive: true })
+      );
+      document.addEventListener('visibilitychange', () => this._kick && this._kick());
+    }
+    this._kick();
+    [80, 400, 1200].forEach(ms => setTimeout(() => this._kick && this._kick(), ms));
+  }
+
+  benefitsStrip() {
+    const items = [
+      ['Envíos a todo el país', 'Coordinamos por WhatsApp'],
+      ['Productos originales', 'Con caja y sellado de fábrica'],
+      ['Stock corto', 'Pocas unidades de cada cosa'],
+      ['Pago flexible', 'Transferencia, tarjeta o efectivo']
+    ];
+    const pawBg = [
+      'radial-gradient(ellipse 34% 26% at 50% 72%,#E0A8B6 99%,transparent 100%)',
+      'radial-gradient(ellipse 13% 16% at 22% 40%,#E0A8B6 99%,transparent 100%)',
+      'radial-gradient(ellipse 13% 16% at 41% 25%,#E0A8B6 99%,transparent 100%)',
+      'radial-gradient(ellipse 13% 16% at 60% 25%,#E0A8B6 99%,transparent 100%)',
+      'radial-gradient(ellipse 13% 16% at 79% 40%,#E0A8B6 99%,transparent 100%)'
+    ].join(',');
+
+    const cells = items.map(function (it) {
+      return h('div', { key: it[0], style: { display: 'flex', gap: '12px', alignItems: 'flex-start' } }, [
+        h('span', { key: 'p', style: { width: '18px', height: '18px', flex: 'none', marginTop: '3px', backgroundImage: pawBg } }),
+        h('div', { key: 'd' }, [
+          h('p', { key: 't', style: { margin: '0 0 3px', fontSize: '14.5px', color: INK } }, it[0]),
+          h('p', { key: 'x', style: { margin: 0, fontSize: '13px', color: BODY } }, it[1])
+        ])
+      ]);
+    });
+
+    const inner = h('div', {
+      style: { maxWidth: '1240px', margin: '0 auto', padding: '22px 28px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '18px' }
+    }, cells);
+
+    return h('div', { key: 'benef', style: { borderBottom: '1px solid ' + LINE, background: '#FFFFFF' } }, inner);
+  }
+
+  catList(all) {
+    const map = {};
+    all.forEach(p => {
+      if (!map[p.cat]) map[p.cat] = { name: p.cat, count: 0, img: (p.gallery || [])[0] };
+      map[p.cat].count++;
+    });
+    return Object.keys(map).map(k => map[k]);
+  }
+
+  foldText(text, offset) {
+    return Array.from(text).map(function (ch, i) {
+      const delay = ((offset || 0) + i) * 0.045 + 's';
+      return h('span', { key: i, className: 'lgm-fold-seg' },
+        h('span', { style: { animationDelay: delay } }, ch === ' ' ? '\u00A0' : ch));
+    });
+  }
+
+  gataBand() {
+    const eyeX = this.state.eyeX || 0, eyeY = this.state.eyeY || 0;
+    const eye = (side) => h('div', {
+      key: side,
+      style: {
+        position: 'absolute', [side]: '25%', top: '66%', width: '15%', aspectRatio: '92/78',
+        borderRadius: '50%', background: 'radial-gradient(circle at 50% 50%,#EFE6A6 0%,#D9CE7C 100%)',
+        animation: 'lgm-blink 5s ease-in-out infinite', transformOrigin: '50% 50%'
+      }
+    }, h('span', {
+      style: {
+        position: 'absolute', left: '50%', top: '47%', display: 'block', width: '88%', height: '88%',
+        borderRadius: '50%', background: '#140E0C',
+        transform: 'translate(calc(-50% + ' + eyeX + '%), calc(-50% + ' + eyeY + '%))'
+      }
+    }, h('span', {
+      style: { position: 'absolute', left: '50%', top: '8%', display: 'block', width: '30%', height: '30%', borderRadius: '50%', background: '#FFFFFF' }
+    })));
+
+    return h('div', {
+      key: 'band',
+      style: {
+        background: '#FDFBF8', borderTop: '1px solid ' + LINE, borderBottom: '1px solid ' + LINE,
+        padding: '6px 24px 0', overflow: 'hidden',
+        display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'center', gap: 'clamp(4px,1vw,16px)'
+      }
+    }, [
+      h('div', { key: 'wm', style: { flex: '0 1 auto', textAlign: 'center', paddingBottom: 'clamp(12px,2vw,28px)' } }, [
+        h('p', { key: 'l1', style: { margin: 0, fontFamily: serif, fontWeight: 400, fontSize: 'clamp(30px,6vw,86px)', lineHeight: 1, letterSpacing: '.14em', color: INK, whiteSpace: 'nowrap' } },
+          this.foldText('LA GATA', 0)),
+        h('p', { key: 'l2', style: { margin: '10px 0 0', fontFamily: serif, fontSize: 'clamp(13px,1.8vw,26px)', letterSpacing: '.42em', color: ROSE, whiteSpace: 'nowrap' } },
+          this.foldText('DE MADRID', 7))
+      ]),
+      h('div', { key: 'cat', style: { flex: '0 0 auto', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', marginBottom: '-18px' } },
+        h('div', { style: { position: 'relative', width: 'clamp(300px,38vw,470px)', height: 'clamp(230px,30vw,340px)', overflow: 'hidden' } },
+          h('div', { style: { position: 'absolute', left: '50%', bottom: 0, transform: 'translateX(-50%)', width: '90%' } }, [
+            h('img', { key: 'i', src: './assets/gata-head.png', alt: 'Gata', style: { display: 'block', width: '100%', height: 'auto' } }),
+            eye('left'),
+            eye('right')
+          ])))
+    ]);
+  }
+
+  go(hash) {
+    if (location.hash === hash) this._onHash();
+    else location.hash = hash;
+  }
+
+  setQty(id, qty) {
+    const cart = Object.assign({}, this.state.cart);
+    if (qty <= 0) delete cart[id]; else cart[id] = qty;
+    if (window.LGM) window.LGM.writeCart(cart);
+    this.setState({ cart });
+  }
+
+  add(id, qty) {
+    this.setQty(id, (this.state.cart[id] || 0) + (qty || 1));
+    this.setState({ panel: 'cart' });
+  }
+
+  // ---------- piezas compartidas ----------
+  section(children, extra) {
+    return h('section', {
+      'data-reveal': '1',
+      style: Object.assign({ maxWidth: '1240px', margin: '0 auto', padding: '0 28px' }, extra || {})
+    }, children);
+  }
+
+  sweepReveals() {
+    const nodes = document.querySelectorAll('[data-reveal]:not(.is-in)');
+    const vh = window.innerHeight || 800;
+    for (let i = 0; i < nodes.length; i++) {
+      const r = nodes[i].getBoundingClientRect();
+      if (r.top < vh * 0.94 && r.bottom > -vh * 0.2) nodes[i].classList.add('is-in');
+    }
+    return nodes.length;
+  }
+
+  observeReveals() {
+    document.documentElement.classList.add('lgm-reveal');
+    if (!this._sweepHooked) {
+      this._sweepHooked = true;
+      let queued = false;
+      const run = () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => { queued = false; this.sweepReveals(); });
+      };
+      this._sweep = run;
+      ['scroll', 'resize', 'wheel', 'touchmove'].forEach(ev =>
+        window.addEventListener(ev, run, { passive: true })
+      );
+      document.addEventListener('scroll', run, { passive: true, capture: true });
+      /* red de seguridad: si nada dispara, todo queda visible */
+      this._sweepTimer = setInterval(() => {
+        if (this.sweepReveals() === 0) { clearInterval(this._sweepTimer); this._sweepTimer = null; }
+      }, 500);
+      setTimeout(() => {
+        const left = document.querySelectorAll('[data-reveal]:not(.is-in)');
+        for (let i = 0; i < left.length; i++) left[i].classList.add('is-in');
+      }, 9000);
+    }
+    this.sweepReveals();
+    [60, 220, 600].forEach(ms => setTimeout(() => this.sweepReveals(), ms));
+  }
+
+  componentDidUpdate() { this.observeReveals(); }
+
+  eyebrow(text) {
+    return h('p', { style: { margin: '0 0 12px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: OLIVE } }, text);
+  }
+
+  card(p, idx) {
+    const L = window.LGM;
+    return h('article', {
+      key: p.id,
+      'data-reveal': '1',
+      style: {
+        borderTop: '1px solid ' + LINE, paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px',
+        transitionDelay: ((idx || 0) % 4) * 70 + 'ms'
+      }
+    }, [
+      h('a', {
+        key: 'img', onClick: () => this.go('#/producto/' + p.id),
+        style: { display: 'block', height: '300px', background: SOFT, overflow: 'hidden', position: 'relative' }
+      }, [
+        h('img', { key: 'i', src: (p.gallery || [])[0], alt: p.name, style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' } }),
+        p.badge ? h('span', {
+          key: 'b',
+          style: {
+            position: 'absolute', left: '12px', top: '12px', background: p.badge === 'Destacado' ? '#6E7B53' : '#C87F92',
+            color: '#FFFFFF', fontSize: '11.5px', letterSpacing: '.14em', textTransform: 'uppercase', padding: '6px 12px', borderRadius: '4px'
+          }
+        }, p.badge) : null
+      ]),
+      h('div', { key: 'd', style: { display: 'flex', flexDirection: 'column', gap: '6px' } }, [
+        h('p', { key: 'c', style: { margin: 0, fontSize: '11.5px', letterSpacing: '.2em', textTransform: 'uppercase', color: OLIVE } }, p.cat),
+        h('a', { key: 'n', onClick: () => this.go('#/producto/' + p.id), style: { fontFamily: serif, fontSize: '22px', lineHeight: 1.25, color: INK } }, p.name),
+        h('p', { key: 'x', style: { margin: 0, fontSize: '14px', lineHeight: 1.6, color: BODY } }, p.desc),
+        h('p', { key: 'p', style: { margin: '4px 0 0', fontSize: '16px', color: ROSE } }, L.gs(p.price)),
+        h('button', {
+          key: 'a', type: 'button', onClick: () => this.add(p.id),
+          style: { cursor: 'pointer', marginTop: '6px', alignSelf: 'flex-start', background: ROSE, color: '#FFFFFF', border: 0, borderRadius: '999px', padding: '12px 22px', fontSize: '12px', letterSpacing: '.16em', textTransform: 'uppercase' }
+        }, 'Agregar')
+      ])
+    ]);
+  }
+
+  grid(items) {
+    return h('div', {
+      style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(230px,1fr))', gap: '18px' }
+    }, items.map((p, i) => this.card(p, i)));
+  }
+
+  // ---------- vistas ----------
+  viewInicio() {
+    const L = window.LGM;
+    const all = L.products();
+    return h('div', { key: 'inicio', style: { animation: 'lgm-in .28s ease both' } }, [
+      h('div', { key: 'hero', style: { position: 'relative', overflow: 'hidden', background: '#1A1210' } }, [
+        h('video', {
+          key: 'v', src: './assets/hero-madrid.mp4', autoPlay: true, loop: true, muted: true, playsInline: true,
+          poster: './assets/madrid-granvia.png',
+          ref: (el) => this.bindVideo(el),
+          style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
+        }),
+        h('div', { key: 's', style: { position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(20,14,12,.62) 0%,rgba(20,14,12,.34) 46%,rgba(20,14,12,0) 78%)' } }),
+        h('div', {
+          key: 'c',
+          style: { position: 'relative', maxWidth: '1240px', margin: '0 auto', padding: 'clamp(72px,10vw,132px) 28px clamp(72px,10vw,120px)' }
+        }, [
+          h('p', { key: 'e', style: { margin: '0 0 18px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#FDFBF8' } }, 'Novedades 2026'),
+          h('h1', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(44px,6vw,78px)', lineHeight: 1.02, color: '#FFFFFF', textShadow: '0 2px 20px rgba(20,14,12,.5)' } }, [
+            'Elegancia', h('br', { key: 'b' }), h('em', { key: 'i', style: { color: '#F3C9D2' } }, 'con siete vidas.')
+          ]),
+          h('div', { key: 'cta', style: { display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '32px' } }, [
+            h('a', { key: 'p', onClick: () => this.go('#/productos'), style: { background: '#65734A', color: '#FFFFFF', padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase' } }, 'Ver productos'),
+            h('a', { key: 'n', onClick: () => this.go('#/nosotros'), style: { border: '1px solid rgba(253,251,248,.75)', color: '#FFFFFF', padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase' } }, 'Nosotros')
+          ])
+        ])
+      ]),
+      this.gataBand(),
+      this.section([
+        this.eyebrow('— Categorías'),
+        h('h2', { key: 'h', style: { margin: '0 0 22px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,44px)', lineHeight: 1.1, color: INK } }, 'Comprá por categoría'),
+        h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '14px' } },
+          this.catList(all).map(c => h('a', {
+            key: c.name, onClick: () => this.go('#/productos/' + encodeURIComponent(c.name)),
+            style: { position: 'relative', display: 'block', height: '200px', overflow: 'hidden', borderRadius: '14px', background: SOFT }
+          }, [
+            h('img', { key: 'i', src: c.img, alt: c.name, style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' } }),
+            h('div', { key: 's', style: { position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(20,14,12,0) 40%,rgba(20,14,12,.68) 100%)' } }),
+            h('div', { key: 't', style: { position: 'absolute', left: '16px', bottom: '14px', color: '#FFFFFF' } }, [
+              h('p', { key: 'n', style: { margin: '0 0 2px', fontFamily: serif, fontSize: '25px' } }, c.name),
+              h('p', { key: 'c', style: { margin: 0, fontSize: '12px', letterSpacing: '.16em', textTransform: 'uppercase', opacity: .85 } }, c.count + (c.count === 1 ? ' producto' : ' productos'))
+            ])
+          ])))
+      ], { paddingTop: 'clamp(48px,6vw,76px)' }),
+      this.section([
+        this.eyebrow('— Destacados'),
+        h('div', { key: 'head', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '26px' } }, [
+          h('h2', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(30px,4vw,48px)', lineHeight: 1.1, color: INK } }, 'Lo que más se busca'),
+          h('a', { key: 'a', onClick: () => this.go('#/productos'), style: { fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', borderBottom: '1px solid #E0A8B6', paddingBottom: '3px' } }, 'Ver todo')
+        ]),
+        this.grid(all.slice(0, 4))
+      ], { paddingTop: 'clamp(48px,6vw,76px)' }),
+      this.section([
+        this.eyebrow('— Perfumería'),
+        h('div', { key: 'head', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '26px' } }, [
+          h('h2', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,44px)', lineHeight: 1.1, color: INK } }, 'Perfumes originales'),
+          h('a', { key: 'a', onClick: () => this.go('#/productos/Perfumer%C3%ADa'), style: { fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', borderBottom: '1px solid #E0A8B6', paddingBottom: '3px' } }, 'Ver perfumería')
+        ]),
+        this.grid(all.filter(p => p.cat === 'Perfumería').slice(0, 4))
+      ], { paddingTop: 'clamp(48px,6vw,76px)' }),
+      h('div', {
+        key: 'promo',
+        style: { marginTop: 'clamp(48px,6vw,76px)', background: '#6E7B53', color: '#FFFFFF' }
+      }, h('div', {
+        style: { maxWidth: '1240px', margin: '0 auto', padding: 'clamp(32px,4.5vw,60px) 28px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '22px' }
+      }, [
+        h('div', { key: 'l' }, [
+          h('p', { key: 'e', style: { margin: '0 0 10px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#DCE4C9' } }, 'Cupón GATA10'),
+          h('h2', { key: 'h', style: { margin: '0 0 8px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(26px,3.2vw,40px)', lineHeight: 1.12 } }, '10% off en tu primera compra'),
+          h('p', { key: 'p', style: { margin: 0, maxWidth: '46ch', fontSize: '15.5px', lineHeight: 1.7, color: '#E8EEDC' } }, 'Mencioná el código al escribirnos por WhatsApp y te lo aplicamos al total del pedido.')
+        ]),
+        h('a', {
+          key: 'a', href: 'https://wa.me/595981772872?text=' + encodeURIComponent('Hola! Quiero usar el cupón GATA10'),
+          style: { background: '#FDFBF8', color: INK, padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' }
+        }, 'Usar el cupón')
+      ])),
+      this.section([
+        this.eyebrow('— Tecnología y accesorios'),
+        h('div', { key: 'head', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '26px' } }, [
+          h('h2', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,44px)', lineHeight: 1.1, color: INK } }, 'Para el día a día'),
+          h('a', { key: 'a', onClick: () => this.go('#/productos'), style: { fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', borderBottom: '1px solid #E0A8B6', paddingBottom: '3px' } }, 'Ver todo')
+        ]),
+        this.grid(all.filter(p => p.cat !== 'Perfumería').slice(0, 4))
+      ], { paddingTop: 'clamp(48px,6vw,76px)' }),
+      this.section([
+        h('div', {
+          key: 'box',
+          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: '36px', alignItems: 'center', background: SOFT, border: '1px solid ' + LINE, borderRadius: '18px', padding: 'clamp(24px,4vw,52px)' }
+        }, [
+          h('div', { key: 'l' }, [
+            this.eyebrow('— Nosotros'),
+            h('h2', { key: 'h', style: { margin: '0 0 16px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,44px)', lineHeight: 1.12, color: INK } }, 'Una gata negra, un cascabel dorado y muchas ganas de encontrar cosas lindas.'),
+            h('p', { key: 'p', style: { margin: '0 0 22px', fontSize: '16px', lineHeight: 1.8, color: BODY } }, 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. Atendemos por WhatsApp y envolvemos cada pedido a mano.'),
+            h('a', { key: 'a', onClick: () => this.go('#/nosotros'), style: { display: 'inline-block', background: ROSE, color: '#FFFFFF', padding: '15px 28px', borderRadius: '999px', fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase' } }, 'Conocé la historia')
+          ]),
+          h('img', {
+            key: 'logo', src: './assets/logo-gata-madrid.jpg', alt: 'La Gata de Madrid',
+            style: { justifySelf: 'center', display: 'block', width: '100%', maxWidth: '340px', height: 'auto', borderRadius: '14px', border: '1px solid #E5D3CE' }
+          })
+        ])
+      ], { paddingTop: 'clamp(48px,6vw,76px)' })
+    ]);
+  }
+
+  viewProductos() {
+    const L = window.LGM;
+    const all = L.products();
+    const { cat, applied, sort } = this.state;
+    const cats = [];
+    all.forEach(p => { if (!cats.includes(p.cat)) cats.push(p.cat); });
+    const q = applied.trim().toLowerCase();
+    let list = all.filter(p => (!cat || p.cat === cat) && (!q || (p.name + ' ' + p.cat + ' ' + p.desc).toLowerCase().includes(q)));
+    if (sort === 'az') list = list.slice().sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === 'precio-asc') list = list.slice().sort((a, b) => a.price - b.price);
+    if (sort === 'precio-desc') list = list.slice().sort((a, b) => b.price - a.price);
+
+    const pill = (label, active, onClick) => h('button', {
+      key: label, type: 'button', onClick: onClick,
+      style: { cursor: 'pointer', border: 0, background: 'transparent', padding: 0, fontSize: '17px', textAlign: 'left', color: active ? ROSE : INK }
+    }, label);
+
+    return h('div', { key: 'productos', style: { animation: 'lgm-in .28s ease both' } }, [
+      this.section([
+        h('div', { key: 'top', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '24px' } }, [
+          h('div', { key: 'ttl' }, [
+            this.eyebrow('— Catálogo'),
+            h('h1', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 400, fontSize: 'clamp(34px,4.6vw,58px)', lineHeight: 1.05, color: INK } }, ['Todos los ', h('em', { key: 'e', style: { color: '#C08292' } }, 'productos')])
+          ]),
+          h('div', {
+            key: 'bar',
+            style: { boxSizing: 'border-box', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 10px', flex: '1 1 380px', maxWidth: '620px', minWidth: '260px', background: '#FFFFFF', border: '1px solid ' + LINE, borderRadius: '28px', padding: '8px 8px 8px 20px' }
+          }, [
+            h('input', {
+              key: 'i', type: 'text', value: this.state.query, placeholder: 'Buscar',
+              onChange: (e) => this.setState({ query: e.target.value, applied: e.target.value }),
+              style: { flex: '1 1 120px', minWidth: '80px', border: 0, background: 'transparent', fontSize: '15.5px', color: INK, padding: '8px 4px' }
+            }),
+            h('select', {
+              key: 's', value: sort, onChange: (e) => this.setState({ sort: e.target.value }),
+              style: { minWidth: 0, border: 0, background: 'transparent', fontSize: '12px', letterSpacing: '.12em', textTransform: 'uppercase', color: INK, cursor: 'pointer' }
+            }, [
+              h('option', { key: 'r', value: 'recientes' }, 'Más recientes'),
+              h('option', { key: 'a', value: 'precio-asc' }, 'Precio: menor a mayor'),
+              h('option', { key: 'd', value: 'precio-desc' }, 'Precio: mayor a menor'),
+              h('option', { key: 'z', value: 'az' }, 'Nombre A–Z')
+            ])
+          ])
+        ]),
+        h('div', {
+          key: 'body',
+          style: { display: 'grid', gridTemplateColumns: 'minmax(0,200px) minmax(0,1fr)', gap: 'clamp(24px,3vw,44px)', alignItems: 'start', marginTop: 'clamp(28px,3.6vw,44px)' }
+        }, [
+          h('aside', { key: 'side', style: { display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start', minWidth: 0 } }, [
+            h('p', { key: 't', style: { margin: '0 0 4px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: INK } }, 'Categorías'),
+            pill('Todas', !cat, () => this.setState({ cat: null }))
+          ].concat(cats.map(c => pill(c, cat === c, () => this.setState({ cat: c }))))),
+          h('div', { key: 'list', style: { minWidth: 0 } }, [
+            h('p', { key: 'n', style: { margin: '0 0 18px', fontSize: '15px', color: BODY } }, (list.length === 1 ? '1 producto' : list.length + ' productos') + (cat ? ' · ' + cat : '')),
+            list.length ? this.grid(list) : h('p', { key: 'e', style: { margin: 0, fontSize: '16px', color: BODY } }, 'No encontramos productos con esa búsqueda.')
+          ])
+        ])
+      ], { paddingTop: 'clamp(32px,4.5vw,56px)' })
+    ]);
+  }
+
+  viewProducto(id) {
+    const L = window.LGM;
+    const p = L.find(id);
+    if (!p) return this.section([h('p', { key: 'e', style: { fontSize: '16px', color: BODY } }, 'Este producto ya no está disponible.')], { paddingTop: '60px' });
+    const shots = (p.gallery || []);
+    const i = Math.min(this.state.shot, Math.max(0, shots.length - 1));
+    const inCart = this.state.cart[p.id] || 0;
+    const others = L.products().filter(x => x.id !== p.id).slice(0, 4);
+
+    return h('div', { key: 'producto-' + p.id, style: { animation: 'lgm-in .28s ease both' } }, [
+      this.section([
+        h('nav', { key: 'bc', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '13px', color: '#7A6E6A' } }, [
+          h('a', { key: 'a', onClick: () => this.go('#/productos') }, 'Productos'),
+          h('span', { key: 's1' }, '/'),
+          h('span', { key: 'c' }, p.cat),
+          h('span', { key: 's2' }, '/'),
+          h('span', { key: 'n', style: { color: INK } }, p.name)
+        ])
+      ], { paddingTop: '22px' }),
+      this.section([
+        h('div', {
+          key: 'wrap',
+          style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 'clamp(24px,3.4vw,52px)', alignItems: 'start' }
+        }, [
+          h('div', { key: 'gal', style: { display: 'flex', flexDirection: 'column', gap: '12px', minWidth: 0 } }, [
+            h('div', { key: 'hero', style: { background: SOFT, border: '1px solid ' + LINE, height: 'clamp(320px,44vw,540px)', overflow: 'hidden' } },
+              shots.length ? h('img', { src: shots[i], alt: p.name, style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' } }) : null),
+            shots.length > 1 ? h('div', { key: 'th', style: { display: 'flex', gap: '10px', flexWrap: 'wrap' } },
+              shots.map((src, n) => h('button', {
+                key: n, type: 'button', onClick: () => this.setState({ shot: n }),
+                style: { cursor: 'pointer', padding: 0, width: '84px', height: '96px', overflow: 'hidden', background: SOFT, border: n === i ? '2px solid ' + ROSE : '1px solid ' + LINE }
+              }, h('img', { src: src, alt: p.name, style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' } })))) : null
+          ]),
+          h('div', { key: 'info', style: { minWidth: 0, display: 'flex', flexDirection: 'column', gap: '14px' } }, [
+            h('p', { key: 'c', style: { margin: 0, fontSize: '12px', letterSpacing: '.22em', textTransform: 'uppercase', color: OLIVE } }, p.cat),
+            h('h1', { key: 'n', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(30px,3.8vw,48px)', lineHeight: 1.1, color: INK } }, p.name),
+            h('p', { key: 'p', style: { margin: 0, fontFamily: serif, fontSize: 'clamp(26px,3vw,36px)', color: ROSE } }, L.gs(p.price)),
+            h('p', { key: 'd', style: { margin: 0, fontSize: '16px', lineHeight: 1.8, color: BODY } }, p.long || p.desc),
+            h('div', { key: 'cta', style: { display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '4px' } }, [
+              h('button', {
+                key: 'a', type: 'button', onClick: () => this.add(p.id),
+                style: { cursor: 'pointer', background: ROSE, color: '#FFFFFF', border: 0, borderRadius: '999px', padding: '16px 28px', fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase' }
+              }, inCart ? 'Agregar otra (' + inCart + ')' : 'Agregar al carrito'),
+              h('a', {
+                key: 'w', href: 'https://wa.me/' + L.WA + '?text=' + encodeURIComponent('Hola! Quiero consultar por ' + p.name),
+                style: { border: '1px solid #E3D3CE', color: INK, borderRadius: '999px', padding: '16px 28px', fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase' }
+              }, 'Consultar por WhatsApp')
+            ]),
+            h('div', { key: 'specs', style: { marginTop: '10px', borderTop: '1px solid ' + LINE, paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' } },
+              [h('p', { key: 't', style: { margin: 0, fontSize: '12px', letterSpacing: '.22em', textTransform: 'uppercase', color: OLIVE } }, 'Ficha')].concat(
+                (p.specs || []).map((sp, n) => h('div', { key: n, style: { display: 'flex', justifyContent: 'space-between', gap: '16px', fontSize: '14.5px' } }, [
+                  h('span', { key: 'k', style: { color: '#7A6E6A' } }, sp[0]),
+                  h('span', { key: 'v', style: { color: INK, textAlign: 'right' } }, sp[1])
+                ]))))
+          ])
+        ])
+      ], { paddingTop: 'clamp(20px,3vw,34px)' }),
+      this.section([
+        h('div', { key: 'h', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', marginBottom: '22px' } }, [
+          h('h2', { key: 't', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(26px,3vw,38px)', lineHeight: 1.1, color: INK } }, 'También te puede gustar'),
+          h('a', { key: 'a', onClick: () => this.go('#/productos'), style: { fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', borderBottom: '1px solid #E0A8B6', paddingBottom: '3px' } }, 'Ver todo')
+        ]),
+        this.grid(others)
+      ], { paddingTop: 'clamp(48px,6vw,76px)' })
+    ]);
+  }
+
+  viewNosotros() {
+    const stats = [['100%', 'Productos originales, con caja y sellado de fábrica'], ['1 a 3', 'Unidades por pieza: stock corto y rotativo'], ['24 h', 'Respondemos consultas por WhatsApp'], ['7 días', 'Para cambios, con el producto sin uso']];
+    const steps = [
+      ['01', 'Elegimos a mano', 'Revisamos sellos, vencimientos y detalles de empaque. Sumamos solo lo que compraríamos para nosotras.'],
+      ['02', 'Publicamos en la tienda', 'Cada producto se publica con fotos reales, ficha y precio en guaraníes. Si algo se agota, lo damos de baja.'],
+      ['03', 'Confirmás por WhatsApp', 'Armás tu carrito, nos escribís y coordinamos forma de pago y envío. Reservamos la pieza hasta cerrar el pedido.'],
+      ['04', 'Enviamos o entregamos', 'Empaquetado a mano, con tarjeta y pegatina. Enviamos a todo el país o coordinamos entrega.']
+    ];
+    return h('div', { key: 'nosotros', style: { animation: 'lgm-in .28s ease both' } }, [
+      this.section([
+        this.eyebrow('— Nosotros'),
+        h('h1', { key: 'h', style: { margin: '0 0 20px', maxWidth: '28ch', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(32px,4.6vw,58px)', lineHeight: 1.08, color: INK } }, 'Una gata negra, un cascabel dorado y muchas ganas de encontrar cosas lindas.'),
+        h('p', { key: 'p1', style: { margin: '0 0 16px', maxWidth: '68ch', fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'Empezamos buscando un bolso para uso propio y terminamos armando una tienda online. Vendemos por Instagram y WhatsApp: perfumería original, tecnología, bolsos y accesorios, cada cosa elegida una por una.'),
+        h('p', { key: 'p2', style: { margin: 0, maxWidth: '68ch', fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. El nombre viene de dos debilidades de la casa: los gatos y Madrid.')
+      ], { paddingTop: 'clamp(40px,6vw,76px)' }),
+      this.section([
+        h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: '18px' } },
+          stats.map(([n, t]) => h('div', { key: n, style: { borderTop: '1px solid #E3D3CE', paddingTop: '16px' } }, [
+            h('p', { key: 'n', style: { margin: '0 0 6px', fontFamily: serif, fontSize: '34px', color: ROSE } }, n),
+            h('p', { key: 't', style: { margin: 0, fontSize: '14.5px', lineHeight: 1.6, color: BODY } }, t)
+          ])))
+      ], { paddingTop: 'clamp(40px,5vw,64px)' }),
+      this.section([
+        this.eyebrow('— Cómo trabajamos'),
+        h('h2', { key: 'h', style: { margin: '0 0 26px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,44px)', lineHeight: 1.12, color: INK } }, 'De la selección a tu puerta, en cuatro pasos'),
+        h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: '18px' } },
+          steps.map(([n, t, d]) => h('article', { key: n, style: { background: SOFT, border: '1px solid ' + LINE, borderRadius: '16px', padding: '22px 20px' } }, [
+            h('p', { key: 'n', style: { margin: '0 0 10px', fontSize: '12px', letterSpacing: '.2em', color: '#6E7B53' } }, n),
+            h('h3', { key: 't', style: { margin: '0 0 10px', fontFamily: serif, fontWeight: 600, fontSize: '22px', color: INK } }, t),
+            h('p', { key: 'd', style: { margin: 0, fontSize: '14.5px', lineHeight: 1.7, color: BODY } }, d)
+          ])))
+      ], { paddingTop: 'clamp(48px,6vw,80px)' }),
+      this.section([
+        h('div', {
+          key: 'cta',
+          style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '20px', background: INK, borderRadius: '18px', padding: 'clamp(26px,4vw,52px)' }
+        }, [
+          h('div', { key: 'l' }, [
+            h('h2', { key: 'h', style: { margin: '0 0 10px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(26px,3.2vw,40px)', lineHeight: 1.12, color: '#FDFBF8' } }, '¿Buscás algo puntual?'),
+            h('p', { key: 'p', style: { margin: 0, maxWidth: '48ch', fontSize: '15.5px', lineHeight: 1.75, color: '#E6D6CF' } }, 'Contanos qué producto querés y te confirmamos si lo conseguimos, con precio y fecha estimada.')
+          ]),
+          h('a', { key: 'a', href: 'https://wa.me/595981772872', style: { background: '#E0A8B6', color: INK, padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, 'Hacer un pedido')
+        ])
+      ], { paddingTop: 'clamp(48px,6vw,80px)' })
+    ]);
+  }
+
+  viewPrivacidad() {
+    const bloques = [
+      ['Qué datos usamos', 'Solo los que nos das al escribirnos: nombre, teléfono o correo, y la dirección de entrega cuando hay envío. No pedimos datos de tarjetas ni documentos por la web.'],
+      ['Para qué los usamos', 'Para responder consultas, preparar y enviar tu pedido, y avisarte si llega stock que pediste. Nada más.'],
+      ['Carrito y navegador', 'Tu carrito se guarda en el almacenamiento local de tu propio navegador (no se envía a ningún servidor). Podés borrarlo vaciando el carrito o limpiando los datos del sitio.'],
+      ['Con quién los compartimos', 'Solo con la empresa de envíos cuando hace falta despachar tu pedido, y con la plataforma de mensajería que usás para escribirnos (WhatsApp). No vendemos ni cedemos datos a terceros.'],
+      ['Cuánto los guardamos', 'Los mensajes y comprobantes de pedidos se conservan mientras sean necesarios para garantía, cambios o control interno; después se eliminan.'],
+      ['Tus derechos', 'Podés pedirnos ver, corregir o borrar tus datos cuando quieras escribiéndonos por WhatsApp o al correo de contacto. Lo resolvemos dentro de 72 horas hábiles.'],
+      ['Cambios en esta política', 'Si actualizamos esta página, publicamos la nueva versión acá con su fecha. La versión vigente es de septiembre de 2026.']
+    ];
+    return h('div', { key: 'privacidad', style: { animation: 'lgm-in .28s ease both' } }, [
+      this.section([
+        this.eyebrow('— Legal'),
+        h('h1', { key: 'h', style: { margin: '0 0 18px', maxWidth: '26ch', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(32px,4.4vw,54px)', lineHeight: 1.08, color: INK } }, 'Política de privacidad'),
+        h('p', { key: 'p', style: { margin: 0, maxWidth: '68ch', fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'La Gata de Madrid es una tienda online en Paraguay. Esta página explica, en palabras simples, qué datos recibimos cuando nos comprás y qué hacemos con ellos.')
+      ], { paddingTop: 'clamp(40px,6vw,76px)' }),
+      this.section([
+        h('div', { key: 'g', style: { display: 'flex', flexDirection: 'column', gap: '0' } },
+          bloques.map(function (b, i) {
+            return h('div', { key: i, style: { borderTop: '1px solid ' + LINE, padding: '22px 0', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: '10px 40px' } }, [
+              h('h2', { key: 't', style: { margin: 0, fontFamily: serif, fontWeight: 600, fontSize: '23px', color: INK } }, b[0]),
+              h('p', { key: 'd', style: { margin: 0, maxWidth: '62ch', fontSize: '15.5px', lineHeight: 1.8, color: BODY } }, b[1])
+            ]);
+          }))
+      ], { paddingTop: 'clamp(28px,3.6vw,44px)' }),
+      this.section([
+        h('div', {
+          key: 'cta',
+          style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '18px', background: SOFT, border: '1px solid ' + LINE, borderRadius: '18px', padding: 'clamp(22px,3.4vw,40px)' }
+        }, [
+          h('p', { key: 'p', style: { margin: 0, maxWidth: '54ch', fontSize: '15.5px', lineHeight: 1.75, color: BODY } }, '¿Dudas sobre tus datos o querés que los borremos? Escribinos y lo hacemos.'),
+          h('a', { key: 'a', href: 'https://wa.me/595981772872', style: { background: '#65734A', color: '#FFFFFF', padding: '14px 28px', borderRadius: '999px', fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, 'Escribinos')
+        ])
+      ], { paddingTop: 'clamp(40px,5vw,64px)' })
+    ]);
+  }
+
+  cartPanel() {
+    const L = window.LGM;
+    const all = L.products();
+    const lines = Object.keys(this.state.cart).map(id => {
+      const p = all.find(x => x.id === id);
+      return p ? { p: p, qty: this.state.cart[id] } : null;
+    }).filter(Boolean);
+    const total = lines.reduce((s, l) => s + l.p.price * l.qty, 0);
+    const qtyBtn = { cursor: 'pointer', width: '28px', height: '28px', borderRadius: '999px', border: '1px solid #E3D3CE', background: '#FFFFFF', color: INK, fontSize: '15px', lineHeight: 1 };
+    const waText = encodeURIComponent('Hola! Quiero hacer este pedido:\n' + lines.map(l => '• ' + l.p.name + ' x' + l.qty + ' — ' + L.gs(l.p.price * l.qty)).join('\n') + '\nTotal: ' + L.gs(total));
+
+    return h('div', {
+      onClick: () => this.setState({ panel: null }),
+      style: { position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(58,43,38,.42)', display: 'flex', justifyContent: 'flex-end' }
+    }, h('div', {
+      onClick: (e) => e.stopPropagation(),
+      style: { width: '420px', maxWidth: '94vw', height: '100%', background: '#FDFBF8', display: 'flex', flexDirection: 'column', boxShadow: '-24px 0 60px -30px rgba(58,43,38,.5)' }
+    }, [
+      h('div', { key: 'h', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', padding: '22px 24px', borderBottom: '1px solid ' + LINE } }, [
+        h('p', { key: 't', style: { margin: 0, fontFamily: serif, fontSize: '26px', color: INK } }, 'Tu carrito'),
+        h('button', { key: 'x', type: 'button', onClick: () => this.setState({ panel: null }), style: { cursor: 'pointer', border: '1px solid #E3D3CE', background: 'transparent', borderRadius: '999px', width: '34px', height: '34px', fontSize: '17px', color: INK, lineHeight: 1 } }, '×')
+      ]),
+      h('div', { key: 'b', style: { padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: '18px', overflowY: 'auto', flex: 1 } },
+        lines.length === 0
+          ? h('p', { style: { margin: 0, fontSize: '15.5px', lineHeight: 1.7, color: BODY } }, 'Tu carrito está vacío. Agregá productos y te los reservamos.')
+          : lines.map(l => h('div', { key: l.p.id, style: { display: 'flex', gap: '14px', paddingBottom: '18px', borderBottom: '1px solid ' + LINE } }, [
+              h('img', { key: 'i', src: (l.p.gallery || [])[0], alt: l.p.name, style: { width: '76px', height: '86px', objectFit: 'cover', background: SOFT, flex: 'none' } }),
+              h('div', { key: 'd', style: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '6px' } }, [
+                h('a', { key: 'n', onClick: () => { this.setState({ panel: null }); this.go('#/producto/' + l.p.id); }, style: { fontFamily: serif, fontSize: '19px', color: INK } }, l.p.name),
+                h('p', { key: 'p', style: { margin: 0, fontSize: '14px', color: ROSE } }, L.gs(l.p.price)),
+                h('div', { key: 'q', style: { display: 'flex', alignItems: 'center', gap: '10px' } }, [
+                  h('button', { key: '-', type: 'button', onClick: () => this.setQty(l.p.id, l.qty - 1), style: qtyBtn }, '−'),
+                  h('span', { key: 'v', style: { fontSize: '14.5px', minWidth: '18px', textAlign: 'center' } }, l.qty),
+                  h('button', { key: '+', type: 'button', onClick: () => this.setQty(l.p.id, l.qty + 1), style: qtyBtn }, '+'),
+                  h('button', { key: 'r', type: 'button', onClick: () => this.setQty(l.p.id, 0), style: { cursor: 'pointer', marginLeft: 'auto', border: 0, background: 'transparent', fontSize: '12px', letterSpacing: '.12em', textTransform: 'uppercase', color: '#7A6E6A' } }, 'Quitar')
+                ])
+              ])
+            ]))),
+      h('div', { key: 'f', style: { padding: '20px 24px 26px', borderTop: '1px solid ' + LINE, display: 'flex', flexDirection: 'column', gap: '14px' } }, [
+        h('div', { key: 't', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' } }, [
+          h('span', { key: 'l', style: { fontSize: '12.5px', letterSpacing: '.2em', textTransform: 'uppercase', color: OLIVE } }, 'Total'),
+          h('span', { key: 'v', style: { fontFamily: serif, fontSize: '27px', color: INK } }, L.gs(total))
+        ]),
+        h('a', {
+          key: 'c', href: lines.length ? 'https://wa.me/' + L.WA + '?text=' + waText : 'https://wa.me/' + L.WA,
+          style: { textAlign: 'center', background: lines.length ? '#65734A' : '#C6C0B4', color: '#FFFFFF', padding: '15px 24px', borderRadius: '999px', fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', pointerEvents: lines.length ? 'auto' : 'none' }
+        }, 'Finalizar pedido por WhatsApp')
+      ])
+    ]));
+  }
+
+  renderVals() {
+    const r = this.state.route;
+    const view = r.view === 'productos' ? this.viewProductos()
+      : r.view === 'producto' ? this.viewProducto(r.id)
+      : r.view === 'nosotros' ? this.viewNosotros()
+      : r.view === 'privacidad' ? this.viewPrivacidad()
+      : this.viewInicio();
+    const count = Object.keys(this.state.cart).reduce((s, k) => s + this.state.cart[k], 0);
+    return {
+      viewEl: window.LGM ? view : null,
+      overlayEl: this.state.panel === 'cart' && window.LGM ? this.cartPanel() : null,
+      cartCount: count,
+      goHome: () => this.go('#/'),
+      goProductos: () => this.go('#/productos'),
+      goNosotros: () => this.go('#/nosotros'),
+      goPrivacidad: () => this.go('#/privacidad'),
+      openCart: () => this.setState({ panel: 'cart' }),
+      inicioColor: r.view === 'inicio' ? ROSE : INK,
+      productosColor: (r.view === 'productos' || r.view === 'producto') ? ROSE : INK,
+      nosotrosColor: r.view === 'nosotros' ? ROSE : INK
+    };
+  }
+}
+</script>
+</body>
+</html>

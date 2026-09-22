@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de admin — La Gata de Madrid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="./catalogo.js"></script>
+<style>
+  body { margin:0; background:#F7F3EE; -webkit-font-smoothing:antialiased; }
+  a { color:#A85E72; text-decoration:none; }
+  a:hover { color:#5F6B47; }
+  ::selection { background:#F0DCDF; color:#3A2B26; }
+  input, select, button, textarea { font-family:'Jost',system-ui,sans-serif; }
+  input:focus, select:focus, textarea:focus { outline:none; border-color:#C08292; }
+</style>
+</helmet>
+
+<div style="font-family:'Jost',system-ui,sans-serif;color:#3A2B26;background:#F7F3EE;min-height:100vh">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;gap:16px 20px;flex-wrap:wrap;padding:16px 24px;background:#3A2B26;color:#F7F3EE">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="width:22px;height:22px;display:block;background-image:radial-gradient(ellipse 34% 26% at 50% 72%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 22% 40%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 41% 25%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 60% 25%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 79% 40%,#E0A8B6 99%,transparent 100%)"></span>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:20px;letter-spacing:.1em;text-transform:uppercase">Admin · La Gata de Madrid</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase">
+      <a href="./Productos.dc.html" style="color:#E0A8B6">Ver tienda →</a>
+    </div>
+  </header>
+
+  <section style="max-width:1180px;margin:0 auto;padding:clamp(28px,4vw,48px) 24px 0">
+    <p style="margin:0 0 10px;font-size:12.5px;letter-spacing:.24em;text-transform:uppercase;color:#6E7B53">— Catálogo</p>
+    <h1 style="margin:0 0 12px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(30px,4vw,48px);line-height:1.08;color:#3A2B26">Panel de productos</h1>
+    <p style="margin:0;max-width:64ch;font-size:15.5px;line-height:1.75;color:#5A5350">Editá precios, textos, categorías y fotos. Los cambios se guardan en este navegador y los toman la tienda y cada página de producto. Con <strong>Exportar</strong> bajás el JSON para que quede fijo en el sitio.</p>
+
+    <div style="display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0">
+      <button type="button" onClick="{{ save }}" style="cursor:pointer;background:#65734A;color:#FFFFFF;border:0;border-radius:999px;padding:14px 26px;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase" style-hover="background:#4C5836">Guardar cambios</button>
+      <button type="button" onClick="{{ exportJson }}" style="cursor:pointer;background:#FFFFFF;color:#3A2B26;border:1px solid #DED3C7;border-radius:999px;padding:14px 26px;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase" style-hover="border-color:#A85E72;color:#A85E72">Exportar JSON</button>
+      <button type="button" onClick="{{ reset }}" style="cursor:pointer;background:transparent;color:#8C475C;border:1px solid #E6C6CE;border-radius:999px;padding:14px 26px;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase" style-hover="background:#F7E4E6">Restaurar original</button>
+      <span style="align-self:center;font-size:13.5px;color:#6E7B53">{{ status }}</span>
+    </div>
+  </section>
+
+  <section style="max-width:1180px;margin:0 auto;padding:clamp(24px,3vw,36px) 24px 72px;display:flex;flex-direction:column;gap:16px">
+    {{ rowsEl }}
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180}}">
+const h = React.createElement;
+const FIELDS = [
+  ['name', 'Nombre', 'text'],
+  ['cat', 'Categoría', 'text'],
+  ['price', 'Precio (Gs.)', 'number'],
+  ['badge', 'Etiqueta (Destacado / Nuevo / vacío)', 'text'],
+  ['desc', 'Descripción corta', 'area'],
+  ['long', 'Descripción larga', 'area'],
+  ['gallery', 'Fotos (una ruta por línea)', 'area']
+];
+
+class Component extends DCLogic {
+  state = { draft: {}, status: '', open: null };
+
+  componentDidMount() {
+    const L = window.LGM;
+    if (!L) return;
+    const draft = {};
+    L.BASE.forEach(p => {
+      const cur = L.find(p.id) || p;
+      draft[p.id] = {
+        name: cur.name, cat: cur.cat, price: cur.price,
+        badge: cur.badge || '', desc: cur.desc || '', long: cur.long || '',
+        gallery: (cur.gallery || []).join('\n'),
+        oculto: !!(L.overrides()[p.id] && L.overrides()[p.id].oculto)
+      };
+    });
+    this.setState({ draft });
+  }
+
+  set(id, key, value) {
+    const draft = Object.assign({}, this.state.draft);
+    draft[id] = Object.assign({}, draft[id], { [key]: value });
+    this.setState({ draft, status: 'Cambios sin guardar' });
+  }
+
+  buildOverrides() {
+    const L = window.LGM;
+    const map = {};
+    L.BASE.forEach(base => {
+      const d = this.state.draft[base.id];
+      if (!d) return;
+      const patch = {};
+      if (d.name !== base.name) patch.name = d.name;
+      if (d.cat !== base.cat) patch.cat = d.cat;
+      if (Number(d.price) !== base.price) patch.price = Number(d.price) || 0;
+      const badge = d.badge.trim() ? d.badge.trim() : null;
+      if (badge !== (base.badge || null)) patch.badge = badge;
+      if (d.desc !== (base.desc || '')) patch.desc = d.desc;
+      if (d.long !== (base.long || '')) patch.long = d.long;
+      const gal = d.gallery.split('\n').map(s => s.trim()).filter(Boolean);
+      if (gal.join('|') !== (base.gallery || []).join('|')) patch.gallery = gal;
+      if (d.oculto) patch.oculto = true;
+      if (Object.keys(patch).length) map[base.id] = patch;
+    });
+    return map;
+  }
+
+  save() {
+    const L = window.LGM;
+    if (!L) return;
+    L.saveOverrides(this.buildOverrides());
+    this.setState({ status: 'Guardado ✓ — recargá la tienda para verlo' });
+  }
+
+  exportJson() {
+    const data = JSON.stringify(this.buildOverrides(), null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'catalogo-cambios.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    this.setState({ status: 'JSON exportado' });
+  }
+
+  reset() {
+    const L = window.LGM;
+    if (!L) return;
+    L.saveOverrides({});
+    this.componentDidMount();
+    this.setState({ status: 'Catálogo restaurado al original' });
+  }
+
+  input(id, key, type, value) {
+    const common = {
+      value: value,
+      onChange: (e) => this.set(id, key, e.target.value),
+      style: {
+        width: '100%', boxSizing: 'border-box', border: '1px solid #E3DBD0', borderRadius: '10px',
+        background: '#FFFFFF', padding: '11px 13px', fontSize: '15px', color: '#3A2B26'
+      }
+    };
+    if (type === 'area') return h('textarea', Object.assign({}, common, { rows: key === 'long' ? 3 : 2 }));
+    return h('input', Object.assign({}, common, { type: type }));
+  }
+
+  row(base) {
+    const d = this.state.draft[base.id];
+    if (!d) return null;
+    const open = this.state.open === base.id;
+    const thumb = (d.gallery.split('\n')[0] || '').trim();
+
+    return h('article', {
+      key: base.id,
+      style: { background: '#FFFFFF', border: '1px solid #E7DED3', borderRadius: '16px', overflow: 'hidden' }
+    }, [
+      h('div', {
+        key: 'head',
+        onClick: () => this.setState({ open: open ? null : base.id }),
+        style: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 18px' }
+      }, [
+        h('div', { key: 'i', style: { width: '56px', height: '64px', flex: 'none', background: '#FCEFF0', overflow: 'hidden', borderRadius: '8px' } },
+          thumb ? h('img', { src: thumb, alt: d.name, style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' } }) : null),
+        h('div', { key: 'd', style: { flex: 1, minWidth: 0 } }, [
+          h('p', { key: 'n', style: { margin: '0 0 4px', fontFamily: "'Cormorant Garamond',serif", fontSize: '21px', color: '#3A2B26' } }, d.name || base.name),
+          h('p', { key: 'm', style: { margin: 0, fontSize: '13px', color: '#7A6E6A' } }, [
+            d.cat, ' · ', window.LGM.gs(d.price), d.oculto ? ' · oculto' : '', d.badge ? ' · ' + d.badge : ''
+          ])
+        ]),
+        h('a', {
+          key: 'v', href: window.LGM.pageFor(base.id), onClick: (e) => e.stopPropagation(),
+          style: { flex: 'none', fontSize: '12px', letterSpacing: '.14em', textTransform: 'uppercase', borderBottom: '1px solid #E0A8B6', paddingBottom: '2px' }
+        }, 'Ver página'),
+        h('span', { key: 'c', style: { flex: 'none', fontSize: '18px', color: '#A08E88' } }, open ? '−' : '+')
+      ]),
+      open ? h('div', {
+        key: 'body',
+        style: { borderTop: '1px solid #EFE6DB', padding: '18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: '14px' }
+      }, FIELDS.map(([key, label, type]) => h('label', {
+        key: key,
+        style: { display: 'flex', flexDirection: 'column', gap: '7px', gridColumn: type === 'area' ? 'span 2' : 'auto', minWidth: 0 }
+      }, [
+        h('span', { key: 'l', style: { fontSize: '11.5px', letterSpacing: '.18em', textTransform: 'uppercase', color: '#6E7B53' } }, label),
+        this.input(base.id, key, type, d[key])
+      ])).concat([
+        h('label', { key: 'oculto', style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14.5px', color: '#3A2B26' } }, [
+          h('input', {
+            key: 'c', type: 'checkbox', checked: !!d.oculto,
+            onChange: (e) => this.set(base.id, 'oculto', e.target.checked),
+            style: { width: '17px', height: '17px', accentColor: '#A85E72' }
+          }),
+          h('span', { key: 's' }, 'Ocultar de la tienda')
+        ])
+      ])) : null
+    ]);
+  }
+
+  renderVals() {
+    const L = window.LGM;
+    return {
+      status: this.state.status,
+      save: () => this.save(),
+      exportJson: () => this.exportJson(),
+      reset: () => this.reset(),
+      rowsEl: L ? L.BASE.map(b => this.row(b)) : null
+    };
+  }
+}
+</script>
+</body>
+</html>
