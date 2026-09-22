@@ -301,9 +301,8 @@ class Component extends DCLogic {
   // como si la gata cruzara la pantalla, y se apaga antes de volver a empezar.
   pawsLayer() {
     const TRACKS = [
-      { k: 'a', x: 2.4, y: 88, dx: 1.4,  dy: -17,  n: 5, rot: 8,   size: 28, start: 0,   off: 1.7 },
-      { k: 'b', x: 92,  y: 12, dx: -1.2, dy: 19,   n: 4, rot: 188, size: 24, start: 7.5, off: -1.5 },
-      { k: 'c', x: 26,  y: 60, dx: 14,   dy: -5,   n: 3, rot: 76,  size: 20, start: 14.5, off: 1.6 }
+      { k: 'a', x: 2.4, y: 88, dx: 1.4,  dy: -17, n: 5, rot: 8,   size: 28, start: 0,  off: 1.7 },
+      { k: 'b', x: 92,  y: 12, dx: -1.2, dy: 19,  n: 4, rot: 188, size: 24, start: 10, off: -1.5 }
     ];
     const pawSvg = () => h('svg', { viewBox: '0 0 100 100', 'aria-hidden': 'true', focusable: 'false' },
       h('g', { fill: 'currentColor' }, [
