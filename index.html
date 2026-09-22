@@ -50,6 +50,31 @@
     .lgm-zoom img, .lgm-lift, .lgm-veil, .lgm-capt, .lgm-paw { transition:none !important; transform:none !important; filter:none !important }
   }
 
+  /* --- desplegable de orden: reemplaza al <select> del sistema --- */
+  .lgm-sort { position:relative; display:inline-block }
+  .lgm-sort-btn { display:inline-flex; align-items:center; gap:9px; border:0; background:transparent;
+    cursor:pointer; padding:9px 14px; border-radius:999px; font-size:12px; letter-spacing:.12em;
+    text-transform:uppercase; color:#3A2B26; white-space:nowrap; transition:background .2s ease }
+  .lgm-sort-btn:hover, .lgm-sort-btn:focus-visible { background:#FAEDF1 }
+  .lgm-sort-btn svg { display:block; flex:none; transition:transform .25s cubic-bezier(.22,.7,.2,1) }
+  .lgm-sort[data-open="1"] .lgm-sort-btn { background:#FAEDF1 }
+  .lgm-sort[data-open="1"] .lgm-sort-btn svg { transform:rotate(180deg) }
+  .lgm-sort-panel { position:absolute; top:calc(100% + 10px); right:0; z-index:31; min-width:248px;
+    max-width:calc(100vw - 40px); background:#FFFFFF; border:1px solid #EDDCD8; border-radius:14px;
+    padding:6px; box-shadow:0 20px 46px -22px rgba(58,43,38,.5); animation:lgm-sort-in .18s ease both }
+  @keyframes lgm-sort-in { from { opacity:0; transform:translateY(-6px) } to { opacity:1; transform:none } }
+  .lgm-sort-opt { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%;
+    text-align:left; border:0; background:transparent; cursor:pointer; padding:11px 14px; border-radius:10px;
+    font-size:13.5px; color:#3A2B26; transition:background .16s ease }
+  .lgm-sort-opt:hover, .lgm-sort-opt:focus-visible { background:#FAEDF1 }
+  .lgm-sort-opt[aria-selected="true"] { color:#A8336B; font-weight:500 }
+  .lgm-sort-tick { opacity:0; flex:none }
+  .lgm-sort-opt[aria-selected="true"] .lgm-sort-tick { opacity:1 }
+  @media (prefers-reduced-motion: reduce){
+    .lgm-sort-panel { animation:none }
+    .lgm-sort-btn svg { transition:none }
+  }
+
   /* --- huella de gata: dibujo unico, usado en el menu y en la franja --- */
   .lgm-paw { display:inline-block; flex:none; line-height:0; width:19px;
     transition:transform .35s cubic-bezier(.22,.7,.2,1) }
@@ -197,7 +222,7 @@ function parseHash() {
 }
 
 class Component extends DCLogic {
-  state = { route: { view: 'inicio' }, cart: {}, panel: null, cat: null, query: '', applied: '', sort: 'recientes', shot: 0 };
+  state = { route: { view: 'inicio' }, cart: {}, panel: null, cat: null, query: '', applied: '', sort: 'recientes', shot: 0, sortOpen: false };
 
   componentDidMount() {
     const L = window.LGM;
@@ -609,6 +634,46 @@ class Component extends DCLogic {
     ]);
   }
 
+  // Desplegable de orden. Reemplaza al <select>, que cada sistema operativo
+  // dibuja a su manera y no seguia la linea del sitio.
+  sortMenu(sort) {
+    const OPCIONES = [
+      ['recientes', 'Más recientes'],
+      ['precio-asc', 'Precio: menor a mayor'],
+      ['precio-desc', 'Precio: mayor a menor'],
+      ['az', 'Nombre A–Z']
+    ];
+    const abierto = !!this.state.sortOpen;
+    const actual = (OPCIONES.find(o => o[0] === sort) || OPCIONES[0])[1];
+    const cerrar = () => this.setState({ sortOpen: false });
+
+    const chevron = h('svg', { width: 11, height: 7, viewBox: '0 0 11 7', 'aria-hidden': 'true', focusable: 'false' },
+      h('path', { d: 'M1 1.2 5.5 5.6 10 1.2', fill: 'none', stroke: '#8A7B76', strokeWidth: 1.6, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+    const tick = h('svg', { className: 'lgm-sort-tick', width: 13, height: 10, viewBox: '0 0 13 10', 'aria-hidden': 'true', focusable: 'false' },
+      h('path', { d: 'M1 5.2 4.6 8.8 12 1.4', fill: 'none', stroke: '#A8336B', strokeWidth: 1.8, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+
+    return h('div', {
+      key: 'sort', className: 'lgm-sort', 'data-open': abierto ? '1' : '0',
+      onKeyDown: (e) => { if (e.key === 'Escape' && abierto) { e.stopPropagation(); cerrar(); } }
+    }, [
+      h('button', {
+        key: 'b', type: 'button', className: 'lgm-sort-btn',
+        'aria-haspopup': 'listbox', 'aria-expanded': abierto ? 'true' : 'false',
+        onClick: () => this.setState({ sortOpen: !abierto })
+      }, [h('span', { key: 't' }, actual), chevron]),
+      abierto ? h('div', {
+        key: 'tapa', onClick: cerrar,
+        style: { position: 'fixed', inset: 0, zIndex: 30 }
+      }) : null,
+      abierto ? h('div', { key: 'p', className: 'lgm-sort-panel', role: 'listbox', 'aria-label': 'Ordenar por' },
+        OPCIONES.map(([valor, etiqueta]) => h('button', {
+          key: valor, type: 'button', className: 'lgm-sort-opt', role: 'option',
+          'aria-selected': valor === sort ? 'true' : 'false',
+          onClick: () => this.setState({ sort: valor, sortOpen: false })
+        }, [h('span', { key: 'e' }, etiqueta), tick]))) : null
+    ]);
+  }
+
   viewProductos() {
     const L = window.LGM;
     const all = L.products();
@@ -642,15 +707,7 @@ class Component extends DCLogic {
               onChange: (e) => this.setState({ query: e.target.value, applied: e.target.value }),
               style: { flex: '1 1 120px', minWidth: '80px', border: 0, background: 'transparent', fontSize: '15.5px', color: INK, padding: '8px 4px' }
             }),
-            h('select', {
-              key: 's', value: sort, onChange: (e) => this.setState({ sort: e.target.value }),
-              style: { minWidth: 0, border: 0, background: 'transparent', fontSize: '12px', letterSpacing: '.12em', textTransform: 'uppercase', color: INK, cursor: 'pointer' }
-            }, [
-              h('option', { key: 'r', value: 'recientes' }, 'Más recientes'),
-              h('option', { key: 'a', value: 'precio-asc' }, 'Precio: menor a mayor'),
-              h('option', { key: 'd', value: 'precio-desc' }, 'Precio: mayor a menor'),
-              h('option', { key: 'z', value: 'az' }, 'Nombre A–Z')
-            ])
+            this.sortMenu(sort)
           ])
         ]),
         h('div', {
