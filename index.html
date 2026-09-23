@@ -542,12 +542,26 @@ class Component extends DCLogic {
     const all = L.products();
     return h('div', { key: 'inicio', style: { animation: 'lgm-in .28s ease both' } }, [
       h('div', { key: 'hero', style: { position: 'relative', overflow: 'hidden', background: '#1A1210' } }, [
-        h('video', {
-          key: 'v', src: './assets/hero-cibeles.mp4', autoPlay: true, loop: true, muted: true, playsInline: true,
-          poster: './assets/hero-cibeles.jpg',
-          ref: (el) => this.bindVideo(el),
-          style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
-        }),
+        // Video o imagen, según lo que se haya elegido en el panel.
+        // La key incluye el tipo para que al cambiar se rehaga el elemento
+        // en vez de intentar reusar el anterior.
+        (function () {
+          const tipo = L.cfg('portada_tipo');
+          const fondo = { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' };
+          if (tipo === 'imagen') {
+            return h('img', {
+              key: 'portada-imagen', src: L.cfg('portada_imagen'), alt: '', 'aria-hidden': 'true',
+              style: fondo
+            });
+          }
+          return h('video', {
+            key: 'portada-video', src: L.cfg('portada_video'),
+            autoPlay: true, loop: true, muted: true, playsInline: true,
+            poster: L.cfg('portada_imagen'),
+            ref: (el) => this.bindVideo(el),
+            style: fondo
+          });
+        }).call(this),
         h('div', { key: 's', style: { position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(20,14,12,.78) 0%,rgba(20,14,12,.54) 46%,rgba(20,14,12,0) 86%)' } }),
         h('div', {
           key: 'c', className: 'lgm-hero',

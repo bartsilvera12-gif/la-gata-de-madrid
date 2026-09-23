@@ -118,3 +118,17 @@ haga falta y tocás Guardar una sola vez.
 
 Todo lo que guardás se ve en la tienda apenas recargues: no hay que publicar
 ni volver a subir nada.
+
+## La portada
+
+En **Configuración → Portada** elegís si arriba se ve un **video** o una
+**imagen fija**, y subís el archivo desde ahí mismo.
+
+- El video va en silencio y se repite solo. Que sea corto y liviano: el tope
+  del panel son 40 MB, pero más de 10 MB ya se nota en un celular con poca
+  señal.
+- La imagen sirve para las dos cosas: si elegís "Imagen fija" es lo que se
+  ve, y si dejás video, es lo que aparece mientras el video carga. Conviene
+  que sea un cuadro del propio video, así no hay salto.
+- Los archivos que subís quedan en el depósito de Supabase, no en el
+  repositorio: no hace falta publicar nada después.

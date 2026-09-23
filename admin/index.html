@@ -203,6 +203,21 @@
 
   .pn-vacio { text-align:center; padding:50px 20px; color:var(--texto) }
 
+  /* ---- Archivo de la portada ---- */
+  .pn-medio { display:flex; flex-direction:column; gap:10px }
+  .pn-vista { position:relative; width:100%; aspect-ratio:16/9; border-radius:14px;
+    overflow:hidden; background:var(--rosa-claro); border:1px solid var(--linea) }
+  .pn-vista img, .pn-vista video { display:block; width:100%; height:100%; object-fit:cover }
+  .pn-vista-vacia { display:flex; align-items:center; justify-content:center;
+    font-size:13px; color:var(--tenue); text-align:center; padding:16px }
+  .pn-medio-acc { display:flex; flex-wrap:wrap; gap:8px; align-items:center }
+  .pn-archivo { cursor:pointer; display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--linea); background:var(--papel); color:var(--tinta);
+    border-radius:999px; padding:10px 18px; font-size:11.5px; letter-spacing:.12em;
+    text-transform:uppercase; transition:border-color .18s ease, color .18s ease }
+  .pn-archivo:hover { border-color:var(--rosa); color:var(--rosa) }
+  .pn-ruta { font-size:12px; color:var(--tenue); word-break:break-all; line-height:1.5 }
+
   /* ---- Diálogo propio, en vez del cuadro gris del navegador ---- */
   .pn-velo { position:fixed; inset:0; z-index:60; display:flex; align-items:center;
     justify-content:center; padding:22px; background:rgba(58,43,38,.42);
@@ -746,6 +761,39 @@ class Component extends DCLogic {
   }
 
   // ---------- Configuración ----------
+  // Sube el archivo al depósito y guarda su dirección en el ajuste.
+  subirArchivoConfig(clave, archivo, clase) {
+    if (!archivo) return;
+    const esVideo = clase === 'video';
+    if (esVideo && !/^video\//.test(archivo.type)) {
+      this.setState({ aviso: 'Ese archivo no es un video.' }); return;
+    }
+    if (!esVideo && !/^image\//.test(archivo.type)) {
+      this.setState({ aviso: 'Ese archivo no es una imagen.' }); return;
+    }
+    const mb = archivo.size / 1048576;
+    const tope = esVideo ? 40 : 8;
+    if (mb > tope) {
+      this.setState({ aviso: 'Pesa ' + mb.toFixed(1) + ' MB y el máximo es ' + tope + ' MB. Comprimilo antes de subirlo.' });
+      return;
+    }
+
+    const ext = (archivo.name.split('.').pop() || (esVideo ? 'mp4' : 'jpg')).toLowerCase();
+    const ruta = 'portada/' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
+    this.setState({ trabajando: true, aviso: 'Subiendo ' + mb.toFixed(1) + ' MB…' });
+
+    sb.storage.from('fotos').upload(ruta, archivo, { cacheControl: '31536000', upsert: false })
+      .then(({ error }) => {
+        if (error) throw error;
+        const url = sb.storage.from('fotos').getPublicUrl(ruta).data.publicUrl;
+        this.setState({
+          cfgBorrador: Object.assign({}, this.state.cfgBorrador, { [clave]: url }),
+          trabajando: false,
+          aviso: 'Archivo subido. Acordate de Guardar para que se vea en la tienda.'
+        });
+      })
+      .catch(err => this.setState({ trabajando: false, aviso: 'No se pudo subir: ' + err.message }));
+  }
   guardarConfig() {
     const cambios = this.state.config.filter(c => this.state.cfgBorrador[c.clave] !== c.valor);
     if (!cambios.length) { this.setState({ aviso: 'No hay cambios en la configuración.' }); return; }
@@ -767,6 +815,32 @@ class Component extends DCLogic {
     if (actual && !nombres.includes(actual)) nombres.unshift(actual);
     if (!nombres.length) nombres.push('Sin categoría');
     return nombres.map(n => h('option', { key: n, value: n }, n));
+  }
+
+  // Vista previa + botón de subir, para los ajustes de tipo archivo.
+  controlArchivo(c, valor) {
+    const clase = c.tipo.split(':')[1] || 'imagen';
+    const esVideo = clase === 'video';
+    const url = valor ? urlFoto(valor) : '';
+
+    return h('div', { className: 'pn-medio' }, [
+      h('div', { key: 'v', className: 'pn-vista' + (url ? '' : ' pn-vista-vacia') },
+        !url ? 'Todavía no hay ' + (esVideo ? 'video' : 'imagen')
+          : esVideo
+            ? h('video', { key: url, src: url, muted: true, loop: true, autoPlay: true, playsInline: true })
+            : h('img', { key: url, src: url, alt: '' })),
+      h('div', { key: 'a', className: 'pn-medio-acc' }, [
+        h('label', { key: 'l', className: 'pn-archivo' }, [
+          h('input', {
+            key: 'f', type: 'file', style: { display: 'none' },
+            accept: esVideo ? 'video/*' : 'image/*',
+            onChange: (e) => { this.subirArchivoConfig(c.clave, e.target.files[0], clase); e.target.value = ''; }
+          }),
+          h('span', { key: 's' }, url ? 'Cambiar' : 'Subir')
+        ])
+      ]),
+      h('p', { key: 'r', className: 'pn-ruta' }, valor || '—')
+    ]);
   }
 
   // ---------- Piezas visuales ----------
@@ -995,12 +1069,27 @@ class Component extends DCLogic {
       grupos.map(g => h('section', { key: g, className: 'pn-seccion' }, [
         h('h2', { key: 't' }, g),
         h('div', { key: 'c', className: 'pn-grid-ancho' },
-          config.filter(c => c.grupo === g).map(c => this.campo(
-            c.etiqueta, c.ayuda,
-            c.tipo === 'parrafo'
-              ? h('textarea', { className: 'pn-campo', rows: 3, value: cfgBorrador[c.clave] || '', onChange: (e) => this.setState({ cfgBorrador: Object.assign({}, cfgBorrador, { [c.clave]: e.target.value }), aviso: '' }) })
-              : h('input', { className: 'pn-campo', type: c.tipo === 'email' ? 'email' : (c.tipo === 'tel' ? 'tel' : 'text'), value: cfgBorrador[c.clave] || '', onChange: (e) => this.setState({ cfgBorrador: Object.assign({}, cfgBorrador, { [c.clave]: e.target.value }), aviso: '' }) })
-          )))
+          config.filter(c => c.grupo === g).map(c => {
+            const cambiar = (v) => this.setState({ cfgBorrador: Object.assign({}, cfgBorrador, { [c.clave]: v }), aviso: '' });
+            const valor = cfgBorrador[c.clave] || '';
+            let control;
+            if (c.tipo.indexOf('archivo:') === 0) {
+              control = this.controlArchivo(c, valor);
+            } else if (c.tipo.indexOf('opcion:') === 0) {
+              // "opcion:video=Video|imagen=Imagen fija"
+              const opts = c.tipo.slice(7).split('|').map(par => {
+                const i = par.indexOf('=');
+                return i < 0 ? [par, par] : [par.slice(0, i), par.slice(i + 1)];
+              });
+              control = h('select', { className: 'pn-campo', value: valor, onChange: (e) => cambiar(e.target.value) },
+                opts.map(([v, t]) => h('option', { key: v, value: v }, t)));
+            } else if (c.tipo === 'parrafo') {
+              control = h('textarea', { className: 'pn-campo', rows: 3, value: valor, onChange: (e) => cambiar(e.target.value) });
+            } else {
+              control = h('input', { className: 'pn-campo', type: c.tipo === 'email' ? 'email' : (c.tipo === 'tel' ? 'tel' : 'text'), value: valor, onChange: (e) => cambiar(e.target.value) });
+            }
+            return this.campo(c.etiqueta, c.ayuda, control);
+          }))
       ])).concat([
         h('div', { key: 'acc', style: { display: 'flex', gap: '12px', alignItems: 'center' } }, [
           h('button', { key: 'g', type: 'button', className: 'pn-btn pn-verde', disabled: this.state.trabajando || !cambios, onClick: () => this.guardarConfig() },
