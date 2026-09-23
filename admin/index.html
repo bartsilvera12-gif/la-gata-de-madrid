@@ -93,6 +93,16 @@ const sb = window.supabase.createClient(API, CLAVE, {
 const INK = '#3A2B26', BODY = '#5A5350', OLIVE = '#6E7B53', SERIF = "'Cormorant Garamond',serif";
 const gs = (n) => 'Gs. ' + Number(n || 0).toLocaleString('es-PY');
 
+// Las fotos viejas se guardaron como "./assets/x.jpg", que servía cuando todo
+// colgaba de la raíz. El panel vive en /admin/, así que desde acá eso apunta a
+// /admin/assets y no existe. Las que suba el panel son URLs completas.
+function urlFoto(u) {
+  const s = String(u || '');
+  if (!s) return s;
+  if (/^(https?:|data:|\/)/.test(s)) return s;  // absoluta: se usa tal cual
+  return '../' + s.replace(/^\.\//, '');        // relativa: sube un nivel
+}
+
 // De "Clave: valor" por línea al formato [[clave, valor], ...] que guarda la base.
 function fichaDesdeTexto(txt) {
   return String(txt || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
@@ -348,7 +358,7 @@ class Component extends DCLogic {
         h('button', { key: 'u', type: 'button', className: 'ad-mover', disabled: i === 0 || t, title: 'Subir', onClick: () => this.mover(p.id, -1) }, '▲'),
         h('button', { key: 'd', type: 'button', className: 'ad-mover', disabled: i === total - 1 || t, title: 'Bajar', onClick: () => this.mover(p.id, 1) }, '▼')
       ]),
-      h('div', { key: 'm', className: 'ad-mini' }, d.fotos[0] ? h('img', { src: d.fotos[0], alt: '' }) : null),
+      h('div', { key: 'm', className: 'ad-mini' }, d.fotos[0] ? h('img', { src: urlFoto(d.fotos[0]), alt: '' }) : null),
       h('div', { key: 'i', style: { flex: 1, minWidth: 0 } }, [
         h('p', { key: 'n', style: { margin: '0 0 5px', fontFamily: SERIF, fontSize: '21px', color: INK } }, d.nombre || '(sin nombre)'),
         h('div', { key: 'c', style: { display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' } }, [
@@ -359,7 +369,8 @@ class Component extends DCLogic {
           sucio ? this.chip('Sin guardar', false, true) : null
         ])
       ]),
-      h('span', { key: 'x', style: { flex: 'none', fontSize: '20px', color: '#A08E88' } }, abierto ? '−' : '+')
+      h('span', { key: 'x', className: 'ad-btn ad-borde', style: { flex: 'none', padding: '9px 18px' } },
+        abierto ? 'Cerrar' : 'Editar')
     ]);
 
     if (!abierto) return h('article', { key: p.id, className: 'ad-ficha', 'data-sucio': sucio ? '1' : '0' }, [cabecera]);
@@ -404,7 +415,7 @@ class Component extends DCLogic {
           h('p', { key: 'e', className: 'ad-etiqueta', style: { margin: '0 0 9px' } }, 'Fotos'),
           h('div', { key: 'l', style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' } },
             d.fotos.map(u => h('div', { key: u, className: 'ad-foto' }, [
-              h('img', { key: 'i', src: u, alt: '' }),
+              h('img', { key: 'i', src: urlFoto(u), alt: '' }),
               h('button', { key: 'x', type: 'button', className: 'ad-quitar', title: 'Quitar', onClick: () => this.quitarFoto(p.id, u) }, '×')
             ])).concat([
               h('label', {
