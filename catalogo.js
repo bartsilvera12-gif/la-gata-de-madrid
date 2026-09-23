@@ -185,7 +185,10 @@
     // catálogo de respaldo hasta que navegues a otra página.
     alCargar: function (fn) {
       oyentes.push(fn);
-      if (estado !== 'cargando') { try { fn(); } catch (e) {} }
+      // Fuera del ciclo actual a propósito: si se llama en el acto, el aviso
+      // cae dentro de componentDidMount, cuando el componente todavía no
+      // terminó de montarse, y el redibujado se pierde.
+      if (estado !== 'cargando') { setTimeout(function () { try { fn(); } catch (e) {} }, 0); }
     },
     gs: function (n) { return 'Gs. ' + Number(n || 0).toLocaleString('es-PY'); }
   };

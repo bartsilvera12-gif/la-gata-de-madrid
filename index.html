@@ -235,7 +235,7 @@ class Component extends DCLogic {
     this.setState({ route: r, cart: L ? L.readCart() : {}, panel: r.cart ? 'cart' : null });
     // El catálogo llega de Supabase un instante después: cuando está, se
     // vuelve a dibujar. Hasta entonces se ve el catálogo de respaldo.
-    if (L) L.alCargar(() => { this.setState({ datos: (this.state.datos || 0) + 1 }); setTimeout(() => this.observeReveals(), 30); });
+    if (L) L.alCargar(() => { this.forceUpdate(); setTimeout(() => this.observeReveals(), 30); });
     this._onHash = () => {
       const next = parseHash();
       this.setState({ route: next, shot: 0, panel: next.cart ? 'cart' : null, cat: next.cat || null });
