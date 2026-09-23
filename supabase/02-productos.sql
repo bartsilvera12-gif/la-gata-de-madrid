@@ -2,7 +2,7 @@
 -- Generado desde catalogo.js, no escrito a mano.
 -- Si lo corrés dos veces no duplica nada: actualiza por id.
 
-insert into public.productos
+insert into tienda.productos
   (id, nombre, categoria, precio, badge, desc_corta, desc_larga, fotos, ficha, stock, destacado, oculto, orden)
 values
   ('redmi-buds-8-pro', 'Redmi Buds 8 Pro', 'Audio', 320000, 'Nuevo', 'Bluetooth 5.3 · hasta 36 h de batería · cancelación de ruido.', 'Auriculares in-ear con cancelación activa de ruido y 4 micrófonos. Estuche de carga con hasta 36 horas de autonomía y resistencia IP54 para lluvia y polvo.', array['./assets/p-redmi-buds-8-pro.jpg']::text[], '[["Conexión","Bluetooth 5.3"],["Batería","Hasta 36 h con estuche"],["Resistencia","IP54"],["Extras","4 micrófonos · controles táctiles"]]'::jsonb, 1, true, false, 10),

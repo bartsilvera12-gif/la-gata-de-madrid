@@ -23,16 +23,29 @@ El plan gratuito alcanza de sobra para este catálogo.
 **SQL Editor → New query**, pegar todo el contenido de `01-esquema.sql` y
 **Run**. Se puede volver a ejecutar sin romper nada.
 
-Crea la tabla `productos`, el depósito de fotos y las reglas de seguridad.
+Crea el esquema `tienda` con la tabla `productos`, el depósito de fotos, los
+permisos y las reglas de seguridad. Al final devuelve la lista de políticas:
+si esa lista sale vacía, algo no se ejecutó.
 
-### 3. Cargar los productos que ya existen
+Las tablas **no** van en `public`, que es el esquema que Supabase expone por
+defecto y donde cualquier proyecto mira primero.
+
+### 3. Exponer el esquema `tienda` en la API
+
+**Project Settings → API → Data API → Exposed schemas**: agregar `tienda`
+a la lista (junto a los que ya estén) y guardar.
+
+Este paso no existe cuando se usa `public`, y es el que más se olvida: sin
+él la base queda bien armada pero el sitio no ve ningún producto.
+
+### 4. Cargar los productos que ya existen
 
 Misma pantalla, nueva consulta, pegar `02-productos.sql` y **Run**.
 
 Entran los 9 productos que hoy están en el sitio, con sus precios, fichas y
 fotos. Si lo corrés dos veces no se duplican.
 
-### 4. Crear tu usuario de administradora
+### 5. Crear tu usuario de administradora
 
 **Authentication → Users → Add user → Create new user**
 
@@ -42,7 +55,7 @@ fotos. Si lo corrés dos veces no se duplican.
 Ese es el usuario con el que vas a entrar al panel. No hay registro abierto:
 nadie más puede crearse una cuenta.
 
-### 5. Pasarme las dos claves públicas
+### 6. Pasarme las dos claves públicas
 
 **Project Settings → API**, copiar:
 
