@@ -179,7 +179,14 @@
     },
     get WA() { return this.cfg('whatsapp'); },
     estado: function () { return estado; },
-    alCargar: function (fn) { oyentes.push(fn); },
+    // Si los datos ya llegaron antes de que la tienda se suscribiera, se le
+    // avisa igual. Sin esto se pierde la carrera cuando la base contesta
+    // rápido: el aviso sale sin nadie escuchando y la tienda se queda con el
+    // catálogo de respaldo hasta que navegues a otra página.
+    alCargar: function (fn) {
+      oyentes.push(fn);
+      if (estado !== 'cargando') { try { fn(); } catch (e) {} }
+    },
     gs: function (n) { return 'Gs. ' + Number(n || 0).toLocaleString('es-PY'); }
   };
 
