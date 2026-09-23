@@ -55,11 +55,29 @@ los cuatro lugares del código donde está escrito hoy.
 
 **Authentication → Users → Add user → Create new user**
 
-- Tu correo y una contraseña.
+- Correo: **`admin@gatademadrid.com`** y una contraseña.
 - Marcá **Auto Confirm User**, así no hace falta confirmar por mail.
 
-Ese es el usuario con el que vas a entrar al panel. No hay registro abierto:
-nadie más puede crearse una cuenta.
+El correo tiene que ser exactamente ese, porque es el que quedó habilitado en
+la tabla `administradores` del paso 2. Tener cuenta en el Supabase no alcanza:
+esta instancia es compartida con otros proyectos, y sin ese filtro cualquier
+usuario de cualquiera de ellos podría editar la tienda. Si entrás con otro
+correo, el panel te lo dice y cierra la sesión.
+
+### Cambiar o agregar administradoras
+
+En el SQL Editor:
+
+```sql
+-- sumar otra
+insert into gatademadrid.administradores (email) values ('otra@ejemplo.com');
+
+-- sacar una
+delete from gatademadrid.administradores where email = 'vieja@ejemplo.com';
+```
+
+El correo va en minúsculas. El cambio es inmediato, no hace falta tocar nada
+más.
 
 ### 6. Pasarme las dos claves públicas
 

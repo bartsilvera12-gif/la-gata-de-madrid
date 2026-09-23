@@ -121,14 +121,31 @@ class Component extends DCLogic {
   };
 
   componentDidMount() {
-    sb.auth.getSession().then(({ data }) => {
-      this.setState({ sesion: data.session, arrancando: false });
-      if (data.session) this.cargar();
-    });
+    sb.auth.getSession().then(({ data }) => this.verificar(data.session));
     sb.auth.onAuthStateChange((_e, sesion) => {
-      const antes = !!this.state.sesion;
-      this.setState({ sesion });
-      if (sesion && !antes) this.cargar();
+      if (!sesion) { this.setState({ sesion: null, arrancando: false }); return; }
+      if (this.state.sesion) return;          // ya verificada
+      this.verificar(sesion);
+    });
+  }
+
+  // Tener cuenta en el Supabase no alcanza: la instancia es compartida con
+  // otros proyectos. La base dice si este correo es administradora de la
+  // tienda; si no lo es, se cierra la sesión acá mismo.
+  verificar(sesion) {
+    if (!sesion) { this.setState({ sesion: null, arrancando: false }); return; }
+    sb.rpc('es_admin').then(({ data, error }) => {
+      if (error || data !== true) {
+        const correo = (sesion.user && sesion.user.email) || 'Esta cuenta';
+        sb.auth.signOut();
+        this.setState({
+          sesion: null, arrancando: false, trabajando: false, clave: '',
+          errorLogin: correo + ' no tiene permiso para entrar al panel.'
+        });
+        return;
+      }
+      this.setState({ sesion: sesion, arrancando: false, errorLogin: '' });
+      this.cargar();
     });
   }
 
@@ -138,12 +155,18 @@ class Component extends DCLogic {
     const { correo, clave } = this.state;
     if (!correo || !clave) { this.setState({ errorLogin: 'Faltan el correo y la contraseña.' }); return; }
     this.setState({ trabajando: true, errorLogin: '' });
-    sb.auth.signInWithPassword({ email: correo.trim(), password: clave }).then(({ error }) => {
-      this.setState({
-        trabajando: false, clave: '',
-        errorLogin: error ? (error.message === 'Invalid login credentials'
-          ? 'Correo o contraseña incorrectos.' : error.message) : ''
-      });
+    sb.auth.signInWithPassword({ email: correo.trim(), password: clave }).then(({ data, error }) => {
+      if (error) {
+        this.setState({
+          trabajando: false, clave: '',
+          errorLogin: error.message === 'Invalid login credentials'
+            ? 'Correo o contraseña incorrectos.' : error.message
+        });
+        return;
+      }
+      // La contraseña era correcta; ahora la base dice si tiene permiso.
+      this.setState({ clave: '', trabajando: false });
+      this.verificar(data.session);
     });
   }
 

@@ -76,7 +76,45 @@ create trigger configuracion_actualizada
   for each row execute function gatademadrid.tocar_actualizado();
 
 
--- ---------- 3) Permisos de rol ----------
+-- ---------- 3) Quién es administradora ----------
+-- Esta instancia es compartida con otros proyectos. Sin este filtro, cualquier
+-- usuario registrado en cualquiera de ellos tendría el rol "authenticated" y
+-- podría editar este catálogo. Acá se define quién es, de verdad.
+create table if not exists gatademadrid.administradores (
+  email  text primary key,
+  creado timestamptz not null default now()
+);
+
+insert into gatademadrid.administradores (email)
+values ('admin@gatademadrid.com')
+on conflict (email) do nothing;
+
+-- Nadie la lee desde la API: ni siquiera se puede averiguar quiénes son.
+revoke all on gatademadrid.administradores from anon, authenticated;
+alter table gatademadrid.administradores enable row level security;
+-- (sin políticas: con RLS activado y sin permisos, queda cerrada)
+
+-- Devuelve si quien está pidiendo es administradora.
+-- security definer para que pueda mirar la tabla cerrada de arriba;
+-- search_path vacío y nombres completos para que no pueda ser desviada.
+create or replace function gatademadrid.es_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1 from gatademadrid.administradores a
+    where a.email = lower(coalesce(auth.jwt() ->> 'email', ''))
+  );
+$$;
+
+-- El panel la usa para avisar si la cuenta no tiene permiso.
+grant execute on function gatademadrid.es_admin() to authenticated;
+
+
+-- ---------- 4) Permisos de rol ----------
 -- En "public" Supabase los da solos; en un esquema propio hay que darlos.
 -- Es el portón: sin esto, ni siquiera se llega a las reglas por fila.
 grant usage on schema gatademadrid to anon, authenticated;
@@ -94,13 +132,13 @@ alter default privileges in schema gatademadrid
   grant select, insert, update, delete on tables to authenticated;
 
 
--- ---------- 4) Quién puede hacer qué, fila por fila ----------
+-- ---------- 5) Quién puede hacer qué, fila por fila ----------
 alter table gatademadrid.productos enable row level security;
 alter table gatademadrid.configuracion enable row level security;
 
--- La configuración la lee cualquiera (la tienda necesita el WhatsApp y los
--- títulos), pero solo la administradora la cambia. No se puede borrar ni
--- crear filas desde el panel: los ajustes los define el esquema.
+-- Configuración: la lee cualquiera, porque la tienda necesita el WhatsApp y
+-- los títulos para funcionar. Solo la administradora la cambia, y nadie puede
+-- crear ni borrar ajustes: esos los define el esquema.
 drop policy if exists "config lectura publica" on gatademadrid.configuracion;
 create policy "config lectura publica" on gatademadrid.configuracion
   for select to anon using (true);
@@ -111,36 +149,41 @@ create policy "config admin lee" on gatademadrid.configuracion
 
 drop policy if exists "config admin edita" on gatademadrid.configuracion;
 create policy "config admin edita" on gatademadrid.configuracion
-  for update to authenticated using (true) with check (true);
+  for update to authenticated
+  using (gatademadrid.es_admin()) with check (gatademadrid.es_admin());
 
--- Visitantes: solo leen los productos visibles.
+-- Visitantes: solo los productos visibles.
 drop policy if exists "lectura publica" on gatademadrid.productos;
 create policy "lectura publica" on gatademadrid.productos
   for select to anon
   using (oculto = false);
 
--- Administradora (sesión iniciada): ve y edita todo, incluidos los ocultos.
+-- Con sesión iniciada: los ocultos solo los ve la administradora. Un usuario
+-- de otro proyecto de la instancia ve lo mismo que un visitante cualquiera.
 drop policy if exists "admin lee todo" on gatademadrid.productos;
 create policy "admin lee todo" on gatademadrid.productos
-  for select to authenticated using (true);
+  for select to authenticated
+  using (oculto = false or gatademadrid.es_admin());
 
+-- Escribir, solo la administradora.
 drop policy if exists "admin inserta" on gatademadrid.productos;
 create policy "admin inserta" on gatademadrid.productos
-  for insert to authenticated with check (true);
+  for insert to authenticated with check (gatademadrid.es_admin());
 
 drop policy if exists "admin edita" on gatademadrid.productos;
 create policy "admin edita" on gatademadrid.productos
-  for update to authenticated using (true) with check (true);
+  for update to authenticated
+  using (gatademadrid.es_admin()) with check (gatademadrid.es_admin());
 
 drop policy if exists "admin borra" on gatademadrid.productos;
 create policy "admin borra" on gatademadrid.productos
-  for delete to authenticated using (true);
+  for delete to authenticated using (gatademadrid.es_admin());
 
 -- No hay política de insert/update/delete para "anon": con RLS activado,
 -- lo que no está permitido queda denegado. La clave pública solo lee.
 
 
--- ---------- 5) Depósito de fotos ----------
+-- ---------- 6) Depósito de fotos ----------
 -- Storage vive en el esquema "storage", que es de Supabase y no se mueve.
 insert into storage.buckets (id, name, public)
 values ('fotos', 'fotos', true)
@@ -154,26 +197,29 @@ create policy "fotos lectura publica" on storage.objects
 drop policy if exists "fotos admin sube" on storage.objects;
 create policy "fotos admin sube" on storage.objects
   for insert to authenticated
-  with check (bucket_id = 'fotos');
+  with check (bucket_id = 'fotos' and gatademadrid.es_admin());
 
 drop policy if exists "fotos admin edita" on storage.objects;
 create policy "fotos admin edita" on storage.objects
-  for update to authenticated using (bucket_id = 'fotos');
+  for update to authenticated using (bucket_id = 'fotos' and gatademadrid.es_admin());
 
 drop policy if exists "fotos admin borra" on storage.objects;
 create policy "fotos admin borra" on storage.objects
-  for delete to authenticated using (bucket_id = 'fotos');
+  for delete to authenticated using (bucket_id = 'fotos' and gatademadrid.es_admin());
 
 
--- ---------- 6) Comprobación ----------
+-- ---------- 7) Comprobación ----------
 -- Debe devolver una fila por política. Si sale vacío, algo no corrió.
 select schemaname, tablename, policyname, roles, cmd
 from pg_policies
 where schemaname = 'gatademadrid'
 order by policyname;
 
+-- Y quién quedó habilitada para entrar al panel.
+select email from gatademadrid.administradores order by email;
 
--- ---------- 7) Avisar a PostgREST ----------
+
+-- ---------- 8) Avisar a PostgREST ----------
 -- En Supabase autoalojado la caché de esquema no se entera sola de las tablas
 -- nuevas: sin esto, la API responde "Could not find the table in the schema
 -- cache" aunque la tabla exista.
