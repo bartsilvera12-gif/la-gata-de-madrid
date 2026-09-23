@@ -66,9 +66,21 @@
     letter-spacing:.14em; text-transform:uppercase; color:#8C837E; border-bottom:2px solid transparent }
   .ad-pestana[data-activa="1"] { color:#3A2B26; border-bottom-color:#A85E72 }
 
+  /* Con tres pestañas la fila no entra en un teléfono: se desliza. */
+  .ad-pestanas { display:flex; gap:22px; overflow-x:auto; scrollbar-width:none;
+    -webkit-overflow-scrolling:touch }
+  .ad-pestanas::-webkit-scrollbar { display:none }
+  .ad-pestanas > * { flex:none; white-space:nowrap }
+
+  .ad-cat-nom { min-width:140px }
+
   @media (max-width: 640px){
-    .ad-cab { gap:10px; padding:11px 12px }
+    .ad-cab { gap:10px; padding:11px 12px; flex-wrap:wrap }
+    .ad-cat-nom { flex:1 1 100% !important }
+    .ad-cat-acc { flex:1 1 100% !important; justify-content:flex-end }
     .ad-btn { padding:12px 18px }
+    .ad-pestanas { gap:16px }
+    .ad-pestana { font-size:12px }
   }
 </style>
 </helmet>
@@ -124,7 +136,7 @@ class Component extends DCLogic {
   state = {
     sesion: null, arrancando: true,
     pestana: 'productos',
-    productos: [], config: [],
+    productos: [], config: [], categorias: [],
     borrador: {}, cfgBorrador: {},
     abierto: null, aviso: '', trabajando: false,
     correo: '', clave: '', errorLogin: ''
@@ -187,8 +199,9 @@ class Component extends DCLogic {
     this.setState({ trabajando: true });
     return Promise.all([
       sb.from('productos').select('*').order('orden', { ascending: true }).order('creado', { ascending: true }),
-      sb.from('configuracion').select('*').order('orden', { ascending: true })
-    ]).then(([pr, cf]) => {
+      sb.from('configuracion').select('*').order('orden', { ascending: true }),
+      sb.from('categorias').select('*').order('orden', { ascending: true })
+    ]).then(([pr, cf, ct]) => {
       if (pr.error) throw pr.error;
       const productos = pr.data || [];
       const borrador = {};
@@ -197,7 +210,9 @@ class Component extends DCLogic {
       const cfgBorrador = {};
       config.forEach(c => { cfgBorrador[c.clave] = c.valor; });
       this.setState({
-        productos, borrador, config, cfgBorrador, trabajando: false,
+        productos, borrador, config, cfgBorrador,
+        categorias: ct.error ? [] : (ct.data || []),
+        trabajando: false,
         aviso: cf.error ? 'Los productos cargaron. La configuración todavía no existe: falta correr 01-esquema.sql y 03-configuracion.sql.' : ''
       });
     }).catch(err => this.setState({ trabajando: false, aviso: 'No se pudo cargar: ' + err.message }));
@@ -292,6 +307,74 @@ class Component extends DCLogic {
     ]).then(() => this.setState({ trabajando: false, aviso: 'Orden actualizado ✓' }));
   }
 
+  // ---------- Categorías ----------
+  nuevaCategoria() {
+    const nombre = (window.prompt('Nombre de la categoría nueva:') || '').trim();
+    if (!nombre) return;
+    if (this.state.categorias.some(c => c.nombre.toLowerCase() === nombre.toLowerCase())) {
+      this.setState({ aviso: 'Ya existe una categoría llamada "' + nombre + '".' });
+      return;
+    }
+    const orden = Math.max(0, ...this.state.categorias.map(c => c.orden || 0)) + 10;
+    this.setState({ trabajando: true });
+    sb.from('categorias').insert({ nombre: nombre, orden: orden }).select().then(({ data, error }) => {
+      if (error) { this.setState({ trabajando: false, aviso: 'No se pudo crear: ' + error.message }); return; }
+      this.setState({
+        categorias: this.state.categorias.concat(data), trabajando: false,
+        aviso: 'Categoría "' + nombre + '" creada.'
+      });
+    });
+  }
+
+  renombrarCategoria(vieja) {
+    const nueva = (window.prompt('Nuevo nombre para "' + vieja + '":', vieja) || '').trim();
+    if (!nueva || nueva === vieja) return;
+    this.setState({ trabajando: true });
+    // Una sola llamada: renombra la categoría y todos sus productos a la vez.
+    sb.rpc('renombrar_categoria', { vieja: vieja, nueva: nueva }).then(({ error }) => {
+      if (error) { this.setState({ trabajando: false, aviso: 'No se pudo renombrar: ' + error.message }); return; }
+      this.setState({ aviso: 'Renombrada a "' + nueva + '". Se actualizaron los productos.' });
+      this.cargar();
+    });
+  }
+
+  cuantosUsan(nombre) {
+    return this.state.productos.filter(p => (this.state.borrador[p.id] || p).categoria === nombre).length;
+  }
+
+  borrarCategoria(nombre) {
+    const n = this.cuantosUsan(nombre);
+    if (n) {
+      this.setState({ aviso: 'No se puede borrar "' + nombre + '": la usan ' + n + ' producto(s). Cambiales la categoría primero.' });
+      return;
+    }
+    if (!window.confirm('¿Borrar la categoría "' + nombre + '"?')) return;
+    this.setState({ trabajando: true });
+    sb.from('categorias').delete().eq('nombre', nombre).then(({ error }) => {
+      if (error) { this.setState({ trabajando: false, aviso: 'No se pudo borrar: ' + error.message }); return; }
+      this.setState({
+        categorias: this.state.categorias.filter(c => c.nombre !== nombre),
+        trabajando: false, aviso: 'Categoría borrada.'
+      });
+    });
+  }
+
+  moverCategoria(nombre, paso) {
+    const lista = this.state.categorias.slice();
+    const i = lista.findIndex(c => c.nombre === nombre);
+    const j = i + paso;
+    if (i < 0 || j < 0 || j >= lista.length) return;
+    const a = lista[i], b = lista[j];
+    lista[i] = Object.assign({}, b, { orden: a.orden });
+    lista[j] = Object.assign({}, a, { orden: b.orden });
+    lista.sort((x, y) => x.orden - y.orden);
+    this.setState({ categorias: lista, trabajando: true });
+    Promise.all([
+      sb.from('categorias').update({ orden: b.orden }).eq('nombre', a.nombre),
+      sb.from('categorias').update({ orden: a.orden }).eq('nombre', b.nombre)
+    ]).then(() => this.setState({ trabajando: false, aviso: 'Orden actualizado ✓' }));
+  }
+
   // ---------- Fotos ----------
   subirFotos(id, archivos) {
     const lista = Array.from(archivos || []);
@@ -331,6 +414,15 @@ class Component extends DCLogic {
       const config = this.state.config.map(c => Object.assign({}, c, { valor: this.state.cfgBorrador[c.clave] }));
       this.setState({ config, trabajando: false, aviso: cambios.length + ' ajuste(s) guardado(s) ✓' });
     });
+  }
+
+  // Las categorías guardadas, más la del producto si quedó fuera de la lista
+  // (por ejemplo si la categoría se borró después).
+  opcionesCategoria(actual) {
+    const nombres = this.state.categorias.map(c => c.nombre);
+    if (actual && !nombres.includes(actual)) nombres.unshift(actual);
+    if (!nombres.length) nombres.push('Sin categoría');
+    return nombres.map(n => h('option', { key: n, value: n }, n));
   }
 
   // ---------- Piezas visuales ----------
@@ -394,7 +486,11 @@ class Component extends DCLogic {
 
         h('div', { key: 'g1', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '14px' } }, [
           this.campo('Nombre', '', inp('nombre')),
-          this.campo('Categoría', 'Agrupa el producto en la tienda.', inp('categoria')),
+          this.campo('Categoría', 'Se administran en la pestaña Categorías.',
+            h('select', {
+              className: 'ad-campo', value: d.categoria,
+              onChange: (e) => this.set(p.id, 'categoria', e.target.value)
+            }, this.opcionesCategoria(d.categoria))),
           this.campo('Precio en guaraníes', 'Solo números.', inp('precio', 'number')),
           this.campo('Stock', 'En cero se muestra como agotado.', inp('stock', 'number')),
           this.campo('Etiqueta', 'Nuevo, Destacado, o vacío.', inp('badge'))
@@ -452,6 +548,45 @@ class Component extends DCLogic {
       ? productos.map((p, i) => this.fila(p, i, productos.length))
       : [h('p', { key: 'v', style: { margin: 0, fontSize: '15.5px', color: BODY } }, 'Todavía no hay productos.')]
     ));
+  }
+
+  vistaCategorias() {
+    const { categorias, trabajando } = this.state;
+    const t = trabajando;
+
+    if (!categorias.length) {
+      return h('div', { key: 'vac', style: { display: 'flex', flexDirection: 'column', gap: '14px', alignItems: 'flex-start' } }, [
+        h('p', { key: 'p', style: { margin: 0, fontSize: '15.5px', lineHeight: 1.7, color: BODY, maxWidth: '62ch' } },
+          'Todavía no hay categorías guardadas. Si ya corriste 04-categorias.sql, las que usan tus productos deberían aparecer acá; si no, creá la primera.'),
+        h('button', { key: 'n', type: 'button', className: 'ad-btn ad-rosa', disabled: t, onClick: () => this.nuevaCategoria() }, '+ Nueva categoría')
+      ]);
+    }
+
+    return h('div', { key: 'cat', style: { display: 'flex', flexDirection: 'column', gap: '13px' } }, [
+      h('div', { key: 'top', style: { display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', marginBottom: '4px' } }, [
+        h('button', { key: 'n', type: 'button', className: 'ad-btn ad-rosa', disabled: t, onClick: () => this.nuevaCategoria() }, '+ Nueva categoría'),
+        h('span', { key: 'c', style: { fontSize: '14px', color: BODY } },
+          categorias.length + (categorias.length === 1 ? ' categoría' : ' categorías') + ' · el orden es el que se ve en la portada')
+      ])
+    ].concat(categorias.map((c, i) => {
+      const usan = this.cuantosUsan(c.nombre);
+      return h('article', { key: c.nombre, className: 'ad-ficha' },
+        h('div', { className: 'ad-cab', style: { cursor: 'default' } }, [
+          h('div', { key: 'o', style: { display: 'flex', flexDirection: 'column', gap: '3px', flex: 'none' } }, [
+            h('button', { key: 'u', type: 'button', className: 'ad-mover', disabled: i === 0 || t, title: 'Subir', onClick: () => this.moverCategoria(c.nombre, -1) }, '▲'),
+            h('button', { key: 'd', type: 'button', className: 'ad-mover', disabled: i === categorias.length - 1 || t, title: 'Bajar', onClick: () => this.moverCategoria(c.nombre, 1) }, '▼')
+          ]),
+          h('div', { key: 'i', className: 'ad-cat-nom', style: { flex: 1 } }, [
+            h('p', { key: 'n', style: { margin: '0 0 5px', fontFamily: SERIF, fontSize: '21px', color: INK, wordBreak: 'break-word' } }, c.nombre),
+            h('span', { key: 'u', className: 'ad-chip', 'data-alerta': usan ? '0' : '1' },
+              usan ? usan + (usan === 1 ? ' producto' : ' productos') : 'sin productos')
+          ]),
+          h('div', { key: 'acc', className: 'ad-cat-acc', style: { display: 'flex', gap: '8px', flex: 'none' } }, [
+            h('button', { key: 'r', type: 'button', className: 'ad-btn ad-borde', disabled: t, style: { padding: '9px 18px' }, onClick: () => this.renombrarCategoria(c.nombre) }, 'Renombrar'),
+            h('button', { key: 'b', type: 'button', className: 'ad-btn ad-peligro', disabled: t, style: { padding: '9px 18px' }, onClick: () => this.borrarCategoria(c.nombre) }, 'Borrar')
+          ])
+        ]));
+    })));
   }
 
   vistaConfig() {
@@ -513,8 +648,9 @@ class Component extends DCLogic {
       ]),
 
       h('div', { key: 'nav', style: { borderBottom: '1px solid #E7DED3', background: '#FBF8F4' } },
-        h('div', { style: { maxWidth: '1120px', margin: '0 auto', padding: '0 22px', display: 'flex', gap: '22px' } }, [
+        h('div', { className: 'ad-pestanas', style: { maxWidth: '1120px', margin: '0 auto', padding: '0 22px' } }, [
           h('button', { key: 'p', type: 'button', className: 'ad-pestana', 'data-activa': pestana === 'productos' ? '1' : '0', onClick: () => this.setState({ pestana: 'productos', aviso: '' }) }, 'Productos'),
+          h('button', { key: 'k', type: 'button', className: 'ad-pestana', 'data-activa': pestana === 'categorias' ? '1' : '0', onClick: () => this.setState({ pestana: 'categorias', aviso: '' }) }, 'Categorías'),
           h('button', { key: 'c', type: 'button', className: 'ad-pestana', 'data-activa': pestana === 'config' ? '1' : '0', onClick: () => this.setState({ pestana: 'config', aviso: '' }) }, 'Configuración')
         ])),
 
@@ -524,7 +660,9 @@ class Component extends DCLogic {
       h('main', { key: 'm', style: { maxWidth: '1120px', margin: '0 auto', padding: 'clamp(20px,3vw,32px) 22px 80px' } },
         trabajando && !this.state.productos.length
           ? h('p', { style: { margin: 0, color: BODY } }, 'Cargando…')
-          : (pestana === 'productos' ? this.vistaProductos() : this.vistaConfig()))
+          : (pestana === 'productos' ? this.vistaProductos()
+            : pestana === 'categorias' ? this.vistaCategorias()
+            : this.vistaConfig()))
     ]);
   }
 

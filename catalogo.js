@@ -82,6 +82,7 @@
   };
 
   var lista = null;              // productos de la base; null = todavía no llegaron
+  var cats = null;               // categorías guardadas; null = no llegaron
   var cfg = {};                  // configuración de la base
   var oyentes = [];
   var estado = 'cargando';       // cargando | listo | respaldo
@@ -122,10 +123,14 @@
     // Si falta la tabla de configuración, la tienda sigue con los valores por
     // defecto en vez de caerse entera.
     var pCfg = pedir('configuracion', 'select=clave,valor').catch(function () { return []; });
+    // Si la tabla de categorías todavía no existe, la tienda las deduce de los
+    // productos como venía haciendo.
+    var pCat = pedir('categorias', 'select=*&order=orden.asc,nombre.asc').catch(function () { return null; });
 
-    return Promise.all([pProd, pCfg]).then(function (res) {
+    return Promise.all([pProd, pCfg, pCat]).then(function (res) {
       lista = res[0].map(mapear);
       res[1].forEach(function (f) { cfg[f.clave] = f.valor; });
+      cats = res[2];
       estado = 'listo';
       avisar();
     }).catch(function (e) {
@@ -161,6 +166,7 @@
     BASE: BASE,
     products: products,
     find: find,
+    categorias: function () { return cats ? JSON.parse(JSON.stringify(cats)) : null; },
     readCart: readCart,
     writeCart: writeCart,
     // Un ajuste del sitio, con el valor de fábrica como respaldo.

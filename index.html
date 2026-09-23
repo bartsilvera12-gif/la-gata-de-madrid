@@ -327,11 +327,22 @@ class Component extends DCLogic {
   }
 
   catList(all) {
+    // Cuántos productos y qué foto tiene cada categoría, según los productos.
     const map = {};
     all.forEach(p => {
       if (!map[p.cat]) map[p.cat] = { name: p.cat, count: 0, img: (p.gallery || [])[0] };
       map[p.cat].count++;
     });
+
+    // Si hay categorías guardadas, mandan ellas: definen el orden y pueden
+    // traer su propia foto. Las que no tienen ningún producto no se muestran,
+    // para no dejar tarjetas vacías en la portada.
+    const guardadas = window.LGM && window.LGM.categorias();
+    if (guardadas && guardadas.length) {
+      return guardadas
+        .filter(c => map[c.nombre])
+        .map(c => Object.assign({}, map[c.nombre], c.foto ? { img: c.foto } : {}));
+    }
     return Object.keys(map).map(k => map[k]);
   }
 
