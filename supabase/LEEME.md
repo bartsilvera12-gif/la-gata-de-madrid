@@ -38,12 +38,18 @@ a la lista (junto a los que ya estén) y guardar.
 Este paso no existe cuando se usa `public`, y es el que más se olvida: sin
 él la base queda bien armada pero el sitio no ve ningún producto.
 
-### 4. Cargar los productos que ya existen
+### 4. Cargar los productos y la configuración
 
-Misma pantalla, nueva consulta, pegar `02-productos.sql` y **Run**.
+Misma pantalla, nueva consulta, pegar `02-productos.sql` y **Run**. Después,
+otra consulta con `03-configuracion.sql` y **Run**.
 
-Entran los 9 productos que hoy están en el sitio, con sus precios, fichas y
-fotos. Si lo corrés dos veces no se duplican.
+Entran los 9 productos y los 13 ajustes del sitio (WhatsApp, correo, títulos
+de la portada, textos de Nosotros), tal como están hoy en el código. Ninguno
+de los dos duplica si lo corrés de nuevo.
+
+Desde ahí, cambiar el número de WhatsApp es editar un campo en el panel, y no
+los cuatro lugares del código donde está escrito hoy.
+
 
 ### 5. Crear tu usuario de administradora
 

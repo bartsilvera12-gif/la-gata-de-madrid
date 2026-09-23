@@ -52,13 +52,38 @@ create trigger productos_actualizado
   for each row execute function gatademadrid.tocar_actualizado();
 
 
--- ---------- 2) Permisos de rol ----------
+-- ---------- 2) Configuración del sitio ----------
+-- Los datos y textos que antes estaban escritos dentro del código: el número
+-- de WhatsApp, el correo, los títulos de la portada. Cada fila es un campo
+-- del panel; "grupo", "etiqueta", "ayuda" y "tipo" son los que arman el
+-- formulario solo, así agregar un ajuste nuevo es agregar una fila.
+create table if not exists gatademadrid.configuracion (
+  clave       text primary key,              -- ej: 'whatsapp'
+  valor       text not null default '',
+  grupo       text not null default 'General',
+  etiqueta    text not null,                 -- lo que se lee en el panel
+  ayuda       text not null default '',
+  tipo        text not null default 'texto', -- texto | parrafo | tel | email
+  orden       integer not null default 0,
+  actualizado timestamptz not null default now()
+);
+
+drop trigger if exists configuracion_actualizada on gatademadrid.configuracion;
+create trigger configuracion_actualizada
+  before update on gatademadrid.configuracion
+  for each row execute function gatademadrid.tocar_actualizado();
+
+
+-- ---------- 3) Permisos de rol ----------
 -- En "public" Supabase los da solos; en un esquema propio hay que darlos.
 -- Es el portón: sin esto, ni siquiera se llega a las reglas por fila.
 grant usage on schema gatademadrid to anon, authenticated;
 
 grant select                         on gatademadrid.productos to anon;
 grant select, insert, update, delete on gatademadrid.productos to authenticated;
+
+grant select                 on gatademadrid.configuracion to anon;
+grant select, update, insert on gatademadrid.configuracion to authenticated;
 
 -- Para las tablas que se creen más adelante en este esquema
 alter default privileges in schema gatademadrid
@@ -67,8 +92,24 @@ alter default privileges in schema gatademadrid
   grant select, insert, update, delete on tables to authenticated;
 
 
--- ---------- 3) Quién puede hacer qué, fila por fila ----------
+-- ---------- 4) Quién puede hacer qué, fila por fila ----------
 alter table gatademadrid.productos enable row level security;
+alter table gatademadrid.configuracion enable row level security;
+
+-- La configuración la lee cualquiera (la tienda necesita el WhatsApp y los
+-- títulos), pero solo la administradora la cambia. No se puede borrar ni
+-- crear filas desde el panel: los ajustes los define el esquema.
+drop policy if exists "config lectura publica" on gatademadrid.configuracion;
+create policy "config lectura publica" on gatademadrid.configuracion
+  for select to anon using (true);
+
+drop policy if exists "config admin lee" on gatademadrid.configuracion;
+create policy "config admin lee" on gatademadrid.configuracion
+  for select to authenticated using (true);
+
+drop policy if exists "config admin edita" on gatademadrid.configuracion;
+create policy "config admin edita" on gatademadrid.configuracion
+  for update to authenticated using (true) with check (true);
 
 -- Visitantes: solo leen los productos visibles.
 drop policy if exists "lectura publica" on gatademadrid.productos;
@@ -97,7 +138,7 @@ create policy "admin borra" on gatademadrid.productos
 -- lo que no está permitido queda denegado. La clave pública solo lee.
 
 
--- ---------- 4) Depósito de fotos ----------
+-- ---------- 5) Depósito de fotos ----------
 -- Storage vive en el esquema "storage", que es de Supabase y no se mueve.
 insert into storage.buckets (id, name, public)
 values ('fotos', 'fotos', true)
@@ -122,7 +163,7 @@ create policy "fotos admin borra" on storage.objects
   for delete to authenticated using (bucket_id = 'fotos');
 
 
--- ---------- 5) Comprobación ----------
+-- ---------- 6) Comprobación ----------
 -- Debe devolver una fila por política. Si sale vacío, algo no corrió.
 select schemaname, tablename, policyname, roles, cmd
 from pg_policies
