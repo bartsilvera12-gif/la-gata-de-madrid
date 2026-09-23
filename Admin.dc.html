@@ -9,212 +9,496 @@
 <x-dc>
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Panel de admin — La Gata de Madrid</title>
+<meta name="robots" content="noindex, nofollow">
+<title>Panel · La Gata de Madrid</title>
 <link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="./assets/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./assets/favicon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="./catalogo.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
   body { margin:0; background:#F7F3EE; -webkit-font-smoothing:antialiased; }
   a { color:#A85E72; text-decoration:none; }
-  a:hover { color:#5F6B47; }
-  ::selection { background:#F0DCDF; color:#3A2B26; }
   input, select, button, textarea { font-family:'Jost',system-ui,sans-serif; }
-  input:focus, select:focus, textarea:focus { outline:none; border-color:#C08292; }
+  input:focus, textarea:focus { outline:none; border-color:#C08292; }
+  ::selection { background:#F0DCDF; color:#3A2B26; }
+
+  .ad-btn { cursor:pointer; border:0; border-radius:999px; padding:13px 24px; font-size:12.5px;
+    letter-spacing:.16em; text-transform:uppercase; transition:background .2s ease, opacity .2s ease }
+  .ad-btn:disabled { opacity:.5; cursor:default }
+  .ad-verde { background:#65734A; color:#fff } .ad-verde:hover:enabled { background:#4C5836 }
+  .ad-rosa  { background:#A85E72; color:#fff } .ad-rosa:hover:enabled { background:#8E4258 }
+  .ad-borde { background:#fff; color:#3A2B26; border:1px solid #DED3C7 }
+  .ad-borde:hover:enabled { border-color:#A85E72; color:#A85E72 }
+  .ad-peligro { background:transparent; color:#8C475C; border:1px solid #E6C6CE }
+  .ad-peligro:hover:enabled { background:#F7E4E6 }
+
+  .ad-campo { width:100%; box-sizing:border-box; border:1px solid #E3DBD0; border-radius:10px;
+    background:#fff; padding:11px 13px; font-size:15px; color:#3A2B26 }
+  .ad-etiqueta { font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:#6E7B53 }
+
+  .ad-ficha { background:#fff; border:1px solid #E7DED3; border-radius:16px; overflow:hidden }
+  .ad-ficha[data-sucio="1"] { border-color:#C08292; box-shadow:0 0 0 3px #F6E6EA }
+  .ad-cab { cursor:pointer; display:flex; align-items:center; gap:14px; padding:13px 16px }
+  .ad-cab:hover { background:#FCF8F4 }
+  .ad-mini { width:54px; height:62px; flex:none; background:#FCEFF0; overflow:hidden; border-radius:8px }
+  .ad-mini img { display:block; width:100%; height:100%; object-fit:cover }
+
+  .ad-chip { display:inline-flex; align-items:center; gap:6px; font-size:11.5px; letter-spacing:.1em;
+    text-transform:uppercase; padding:4px 10px; border-radius:999px; background:#F1EAE1; color:#6B5F5A }
+  .ad-chip[data-si="1"] { background:#E6EDD6; color:#4C5836 }
+  .ad-chip[data-alerta="1"] { background:#F7E4E6; color:#8C475C }
+
+  .ad-mover { cursor:pointer; width:30px; height:26px; border:1px solid #E3DBD0; background:#fff;
+    border-radius:8px; color:#6B5F5A; font-size:13px; line-height:1; padding:0 }
+  .ad-mover:hover:enabled { border-color:#A85E72; color:#A85E72 }
+  .ad-mover:disabled { opacity:.35; cursor:default }
+
+  .ad-foto { position:relative; width:74px; height:84px; border-radius:10px; overflow:hidden;
+    border:1px solid #E7DED3; background:#FCEFF0; flex:none }
+  .ad-foto img { display:block; width:100%; height:100%; object-fit:cover }
+  .ad-quitar { position:absolute; right:3px; top:3px; width:22px; height:22px; border-radius:999px;
+    border:0; background:rgba(58,43,38,.72); color:#fff; font-size:13px; line-height:1; cursor:pointer }
+
+  .ad-pestana { cursor:pointer; border:0; background:transparent; padding:12px 4px; font-size:13px;
+    letter-spacing:.14em; text-transform:uppercase; color:#8C837E; border-bottom:2px solid transparent }
+  .ad-pestana[data-activa="1"] { color:#3A2B26; border-bottom-color:#A85E72 }
+
+  @media (max-width: 640px){
+    .ad-cab { gap:10px; padding:11px 12px }
+    .ad-btn { padding:12px 18px }
+  }
 </style>
 </helmet>
 
 <div style="font-family:'Jost',system-ui,sans-serif;color:#3A2B26;background:#F7F3EE;min-height:100vh">
-
-  <header style="display:flex;align-items:center;justify-content:space-between;gap:16px 20px;flex-wrap:wrap;padding:16px 24px;background:#3A2B26;color:#F7F3EE">
-    <div style="display:flex;align-items:center;gap:12px">
-      <span style="width:22px;height:22px;display:block;background-image:radial-gradient(ellipse 34% 26% at 50% 72%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 22% 40%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 41% 25%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 60% 25%,#E0A8B6 99%,transparent 100%),radial-gradient(ellipse 13% 16% at 79% 40%,#E0A8B6 99%,transparent 100%)"></span>
-      <span style="font-family:'Cormorant Garamond',serif;font-size:20px;letter-spacing:.1em;text-transform:uppercase">Admin · La Gata de Madrid</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase">
-      <a href="./Productos.dc.html" style="color:#E0A8B6">Ver tienda →</a>
-    </div>
-  </header>
-
-  <section style="max-width:1180px;margin:0 auto;padding:clamp(28px,4vw,48px) 24px 0">
-    <p style="margin:0 0 10px;font-size:12.5px;letter-spacing:.24em;text-transform:uppercase;color:#6E7B53">— Catálogo</p>
-    <h1 style="margin:0 0 12px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(30px,4vw,48px);line-height:1.08;color:#3A2B26">Panel de productos</h1>
-    <p style="margin:0;max-width:64ch;font-size:15.5px;line-height:1.75;color:#5A5350">Editá precios, textos, categorías y fotos. Los cambios se guardan en este navegador y los toman la tienda y cada página de producto. Con <strong>Exportar</strong> bajás el JSON para que quede fijo en el sitio.</p>
-
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0">
-      <button type="button" onClick="{{ save }}" style="cursor:pointer;background:#65734A;color:#FFFFFF;border:0;border-radius:999px;padding:14px 26px;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase" style-hover="background:#4C5836">Guardar cambios</button>
-      <button type="button" onClick="{{ exportJson }}" style="cursor:pointer;background:#FFFFFF;color:#3A2B26;border:1px solid #DED3C7;border-radius:999px;padding:14px 26px;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase" style-hover="border-color:#A85E72;color:#A85E72">Exportar JSON</button>
-      <button type="button" onClick="{{ reset }}" style="cursor:pointer;background:transparent;color:#8C475C;border:1px solid #E6C6CE;border-radius:999px;padding:14px 26px;font-size:12.5px;letter-spacing:.16em;text-transform:uppercase" style-hover="background:#F7E4E6">Restaurar original</button>
-      <span style="align-self:center;font-size:13.5px;color:#6E7B53">{{ status }}</span>
-    </div>
-  </section>
-
-  <section style="max-width:1180px;margin:0 auto;padding:clamp(24px,3vw,36px) 24px 72px;display:flex;flex-direction:column;gap:16px">
-    {{ rowsEl }}
-  </section>
+  {{ contenido }}
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180}}">
+
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1120}}">
 const h = React.createElement;
-const FIELDS = [
-  ['name', 'Nombre', 'text'],
-  ['cat', 'Categoría', 'text'],
-  ['price', 'Precio (Gs.)', 'number'],
-  ['badge', 'Etiqueta (Destacado / Nuevo / vacío)', 'text'],
-  ['desc', 'Descripción corta', 'area'],
-  ['long', 'Descripción larga', 'area'],
-  ['gallery', 'Fotos (una ruta por línea)', 'area']
-];
+
+const API = 'https://api.neura.com.py';
+const ESQUEMA = 'gatademadrid';
+const CLAVE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc0MTAxNDYxLCJleHAiOjE5MzE3ODE0NjF9.7_wAph8IolPMXtgfpezSwS5XR62IdD__qhqCywLDp3Q';
+
+const sb = window.supabase.createClient(API, CLAVE, {
+  db: { schema: ESQUEMA },
+  auth: { persistSession: true, autoRefreshToken: true }
+});
+
+const INK = '#3A2B26', BODY = '#5A5350', OLIVE = '#6E7B53', SERIF = "'Cormorant Garamond',serif";
+const gs = (n) => 'Gs. ' + Number(n || 0).toLocaleString('es-PY');
+
+// De "Clave: valor" por línea al formato [[clave, valor], ...] que guarda la base.
+function fichaDesdeTexto(txt) {
+  return String(txt || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const i = l.indexOf(':');
+    return i < 0 ? [l, ''] : [l.slice(0, i).trim(), l.slice(i + 1).trim()];
+  });
+}
+function fichaATexto(ficha) {
+  return (ficha || []).map(f => (f[0] || '') + ': ' + (f[1] || '')).join('\n');
+}
+
+// Un nombre convertido en identificador: "CK Eternity Moment" -> "ck-eternity-moment"
+function aSlug(txt) {
+  return String(txt || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48) || 'producto';
+}
 
 class Component extends DCLogic {
-  state = { draft: {}, status: '', open: null };
+  state = {
+    sesion: null, arrancando: true,
+    pestana: 'productos',
+    productos: [], config: [],
+    borrador: {}, cfgBorrador: {},
+    abierto: null, aviso: '', trabajando: false,
+    correo: '', clave: '', errorLogin: ''
+  };
 
   componentDidMount() {
-    const L = window.LGM;
-    if (!L) return;
-    const draft = {};
-    L.BASE.forEach(p => {
-      const cur = L.find(p.id) || p;
-      draft[p.id] = {
-        name: cur.name, cat: cur.cat, price: cur.price,
-        badge: cur.badge || '', desc: cur.desc || '', long: cur.long || '',
-        gallery: (cur.gallery || []).join('\n'),
-        oculto: !!(L.overrides()[p.id] && L.overrides()[p.id].oculto)
-      };
+    sb.auth.getSession().then(({ data }) => {
+      this.setState({ sesion: data.session, arrancando: false });
+      if (data.session) this.cargar();
     });
-    this.setState({ draft });
-  }
-
-  set(id, key, value) {
-    const draft = Object.assign({}, this.state.draft);
-    draft[id] = Object.assign({}, draft[id], { [key]: value });
-    this.setState({ draft, status: 'Cambios sin guardar' });
-  }
-
-  buildOverrides() {
-    const L = window.LGM;
-    const map = {};
-    L.BASE.forEach(base => {
-      const d = this.state.draft[base.id];
-      if (!d) return;
-      const patch = {};
-      if (d.name !== base.name) patch.name = d.name;
-      if (d.cat !== base.cat) patch.cat = d.cat;
-      if (Number(d.price) !== base.price) patch.price = Number(d.price) || 0;
-      const badge = d.badge.trim() ? d.badge.trim() : null;
-      if (badge !== (base.badge || null)) patch.badge = badge;
-      if (d.desc !== (base.desc || '')) patch.desc = d.desc;
-      if (d.long !== (base.long || '')) patch.long = d.long;
-      const gal = d.gallery.split('\n').map(s => s.trim()).filter(Boolean);
-      if (gal.join('|') !== (base.gallery || []).join('|')) patch.gallery = gal;
-      if (d.oculto) patch.oculto = true;
-      if (Object.keys(patch).length) map[base.id] = patch;
+    sb.auth.onAuthStateChange((_e, sesion) => {
+      const antes = !!this.state.sesion;
+      this.setState({ sesion });
+      if (sesion && !antes) this.cargar();
     });
-    return map;
   }
 
-  save() {
-    const L = window.LGM;
-    if (!L) return;
-    L.saveOverrides(this.buildOverrides());
-    this.setState({ status: 'Guardado ✓ — recargá la tienda para verlo' });
+  // ---------- Acceso ----------
+  entrar(e) {
+    if (e) e.preventDefault();
+    const { correo, clave } = this.state;
+    if (!correo || !clave) { this.setState({ errorLogin: 'Faltan el correo y la contraseña.' }); return; }
+    this.setState({ trabajando: true, errorLogin: '' });
+    sb.auth.signInWithPassword({ email: correo.trim(), password: clave }).then(({ error }) => {
+      this.setState({
+        trabajando: false, clave: '',
+        errorLogin: error ? (error.message === 'Invalid login credentials'
+          ? 'Correo o contraseña incorrectos.' : error.message) : ''
+      });
+    });
   }
 
-  exportJson() {
-    const data = JSON.stringify(this.buildOverrides(), null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'catalogo-cambios.json';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    this.setState({ status: 'JSON exportado' });
+  salir() { sb.auth.signOut().then(() => this.setState({ productos: [], config: [], borrador: {}, cfgBorrador: {} })); }
+
+  // ---------- Datos ----------
+  cargar() {
+    this.setState({ trabajando: true });
+    return Promise.all([
+      sb.from('productos').select('*').order('orden', { ascending: true }).order('creado', { ascending: true }),
+      sb.from('configuracion').select('*').order('orden', { ascending: true })
+    ]).then(([pr, cf]) => {
+      if (pr.error) throw pr.error;
+      const productos = pr.data || [];
+      const borrador = {};
+      productos.forEach(p => { borrador[p.id] = this.aBorrador(p); });
+      const config = cf.error ? [] : (cf.data || []);
+      const cfgBorrador = {};
+      config.forEach(c => { cfgBorrador[c.clave] = c.valor; });
+      this.setState({
+        productos, borrador, config, cfgBorrador, trabajando: false,
+        aviso: cf.error ? 'Los productos cargaron. La configuración todavía no existe: falta correr 01-esquema.sql y 03-configuracion.sql.' : ''
+      });
+    }).catch(err => this.setState({ trabajando: false, aviso: 'No se pudo cargar: ' + err.message }));
   }
 
-  reset() {
-    const L = window.LGM;
-    if (!L) return;
-    L.saveOverrides({});
-    this.componentDidMount();
-    this.setState({ status: 'Catálogo restaurado al original' });
-  }
-
-  input(id, key, type, value) {
-    const common = {
-      value: value,
-      onChange: (e) => this.set(id, key, e.target.value),
-      style: {
-        width: '100%', boxSizing: 'border-box', border: '1px solid #E3DBD0', borderRadius: '10px',
-        background: '#FFFFFF', padding: '11px 13px', fontSize: '15px', color: '#3A2B26'
-      }
+  aBorrador(p) {
+    return {
+      nombre: p.nombre || '', categoria: p.categoria || '', precio: p.precio || 0,
+      badge: p.badge || '', desc_corta: p.desc_corta || '', desc_larga: p.desc_larga || '',
+      fotos: (p.fotos || []).slice(), fichaTxt: fichaATexto(p.ficha),
+      stock: p.stock || 0, destacado: !!p.destacado, oculto: !!p.oculto
     };
-    if (type === 'area') return h('textarea', Object.assign({}, common, { rows: key === 'long' ? 3 : 2 }));
-    return h('input', Object.assign({}, common, { type: type }));
   }
 
-  row(base) {
-    const d = this.state.draft[base.id];
-    if (!d) return null;
-    const open = this.state.open === base.id;
-    const thumb = (d.gallery.split('\n')[0] || '').trim();
+  sucio(id) {
+    const p = this.state.productos.find(x => x.id === id);
+    const d = this.state.borrador[id];
+    if (!p || !d) return false;
+    return JSON.stringify(this.aBorrador(p)) !== JSON.stringify(d);
+  }
 
-    return h('article', {
-      key: base.id,
-      style: { background: '#FFFFFF', border: '1px solid #E7DED3', borderRadius: '16px', overflow: 'hidden' }
-    }, [
-      h('div', {
-        key: 'head',
-        onClick: () => this.setState({ open: open ? null : base.id }),
-        style: { cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '16px', padding: '14px 18px' }
-      }, [
-        h('div', { key: 'i', style: { width: '56px', height: '64px', flex: 'none', background: '#FCEFF0', overflow: 'hidden', borderRadius: '8px' } },
-          thumb ? h('img', { src: thumb, alt: d.name, style: { display: 'block', width: '100%', height: '100%', objectFit: 'cover' } }) : null),
-        h('div', { key: 'd', style: { flex: 1, minWidth: 0 } }, [
-          h('p', { key: 'n', style: { margin: '0 0 4px', fontFamily: "'Cormorant Garamond',serif", fontSize: '21px', color: '#3A2B26' } }, d.name || base.name),
-          h('p', { key: 'm', style: { margin: 0, fontSize: '13px', color: '#7A6E6A' } }, [
-            d.cat, ' · ', window.LGM.gs(d.price), d.oculto ? ' · oculto' : '', d.badge ? ' · ' + d.badge : ''
-          ])
-        ]),
-        h('a', {
-          key: 'v', href: window.LGM.pageFor(base.id), onClick: (e) => e.stopPropagation(),
-          style: { flex: 'none', fontSize: '12px', letterSpacing: '.14em', textTransform: 'uppercase', borderBottom: '1px solid #E0A8B6', paddingBottom: '2px' }
-        }, 'Ver página'),
-        h('span', { key: 'c', style: { flex: 'none', fontSize: '18px', color: '#A08E88' } }, open ? '−' : '+')
+  set(id, campo, valor) {
+    const borrador = Object.assign({}, this.state.borrador);
+    borrador[id] = Object.assign({}, borrador[id], { [campo]: valor });
+    this.setState({ borrador, aviso: '' });
+  }
+
+  guardar(id) {
+    const d = this.state.borrador[id];
+    if (!d.nombre.trim()) { this.setState({ aviso: 'El producto necesita un nombre.' }); return; }
+    this.setState({ trabajando: true });
+    sb.from('productos').update({
+      nombre: d.nombre.trim(), categoria: d.categoria.trim() || 'Sin categoría',
+      precio: Number(d.precio) || 0, badge: d.badge.trim() || null,
+      desc_corta: d.desc_corta, desc_larga: d.desc_larga,
+      fotos: d.fotos, ficha: fichaDesdeTexto(d.fichaTxt),
+      stock: Number(d.stock) || 0, destacado: !!d.destacado, oculto: !!d.oculto
+    }).eq('id', id).select().then(({ data, error }) => {
+      if (error) { this.setState({ trabajando: false, aviso: 'No se pudo guardar: ' + error.message }); return; }
+      const productos = this.state.productos.map(p => p.id === id ? data[0] : p);
+      this.setState({ productos, trabajando: false, aviso: 'Guardado ✓' });
+    });
+  }
+
+  nuevo() {
+    const base = 'producto-' + Date.now().toString(36);
+    const orden = Math.max(0, ...this.state.productos.map(p => p.orden || 0)) + 10;
+    this.setState({ trabajando: true });
+    sb.from('productos').insert({
+      id: base, nombre: 'Producto nuevo', categoria: 'Sin categoría',
+      precio: 0, stock: 1, orden: orden, oculto: true
+    }).select().then(({ data, error }) => {
+      if (error) { this.setState({ trabajando: false, aviso: 'No se pudo crear: ' + error.message }); return; }
+      const p = data[0];
+      const borrador = Object.assign({}, this.state.borrador);
+      borrador[p.id] = this.aBorrador(p);
+      this.setState({
+        productos: this.state.productos.concat([p]), borrador,
+        abierto: p.id, trabajando: false,
+        aviso: 'Producto creado, oculto por ahora. Completalo y destildá "Ocultar" para publicarlo.'
+      });
+    });
+  }
+
+  borrar(id, nombre) {
+    if (!window.confirm('¿Borrar "' + nombre + '"? No se puede deshacer.')) return;
+    this.setState({ trabajando: true });
+    sb.from('productos').delete().eq('id', id).then(({ error }) => {
+      if (error) { this.setState({ trabajando: false, aviso: 'No se pudo borrar: ' + error.message }); return; }
+      this.setState({
+        productos: this.state.productos.filter(p => p.id !== id),
+        abierto: null, trabajando: false, aviso: 'Producto borrado.'
+      });
+    });
+  }
+
+  // Intercambia el orden con el vecino y guarda los dos.
+  mover(id, paso) {
+    const lista = this.state.productos.slice();
+    const i = lista.findIndex(p => p.id === id);
+    const j = i + paso;
+    if (i < 0 || j < 0 || j >= lista.length) return;
+    const a = lista[i], b = lista[j];
+    const ordenA = a.orden, ordenB = b.orden;
+    lista[i] = Object.assign({}, b, { orden: ordenA });
+    lista[j] = Object.assign({}, a, { orden: ordenB });
+    lista.sort((x, y) => x.orden - y.orden);
+    this.setState({ productos: lista, trabajando: true });
+    Promise.all([
+      sb.from('productos').update({ orden: ordenB }).eq('id', a.id),
+      sb.from('productos').update({ orden: ordenA }).eq('id', b.id)
+    ]).then(() => this.setState({ trabajando: false, aviso: 'Orden actualizado ✓' }));
+  }
+
+  // ---------- Fotos ----------
+  subirFotos(id, archivos) {
+    const lista = Array.from(archivos || []);
+    if (!lista.length) return;
+    this.setState({ trabajando: true, aviso: 'Subiendo ' + lista.length + ' foto(s)…' });
+    const subir = (f) => {
+      const ext = (f.name.split('.').pop() || 'jpg').toLowerCase();
+      const ruta = id + '/' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
+      return sb.storage.from('fotos').upload(ruta, f, { cacheControl: '31536000', upsert: false })
+        .then(({ error }) => {
+          if (error) throw error;
+          return sb.storage.from('fotos').getPublicUrl(ruta).data.publicUrl;
+        });
+    };
+    Promise.all(lista.map(subir)).then(urls => {
+      const d = this.state.borrador[id];
+      this.set(id, 'fotos', d.fotos.concat(urls));
+      this.setState({ trabajando: false, aviso: 'Fotos subidas. Acordate de Guardar.' });
+    }).catch(err => this.setState({ trabajando: false, aviso: 'No se pudieron subir: ' + err.message }));
+  }
+
+  quitarFoto(id, url) {
+    const d = this.state.borrador[id];
+    this.set(id, 'fotos', d.fotos.filter(u => u !== url));
+  }
+
+  // ---------- Configuración ----------
+  guardarConfig() {
+    const cambios = this.state.config.filter(c => this.state.cfgBorrador[c.clave] !== c.valor);
+    if (!cambios.length) { this.setState({ aviso: 'No hay cambios en la configuración.' }); return; }
+    this.setState({ trabajando: true });
+    Promise.all(cambios.map(c =>
+      sb.from('configuracion').update({ valor: this.state.cfgBorrador[c.clave] }).eq('clave', c.clave)
+    )).then(res => {
+      const err = res.find(r => r.error);
+      if (err) { this.setState({ trabajando: false, aviso: 'No se pudo guardar: ' + err.error.message }); return; }
+      const config = this.state.config.map(c => Object.assign({}, c, { valor: this.state.cfgBorrador[c.clave] }));
+      this.setState({ config, trabajando: false, aviso: cambios.length + ' ajuste(s) guardado(s) ✓' });
+    });
+  }
+
+  // ---------- Piezas visuales ----------
+  campo(etiqueta, ayuda, control) {
+    return h('label', { style: { display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 } }, [
+      h('span', { key: 'e', className: 'ad-etiqueta' }, etiqueta),
+      control,
+      ayuda ? h('span', { key: 'a', style: { fontSize: '12.5px', color: '#8C837E', lineHeight: 1.5 } }, ayuda) : null
+    ]);
+  }
+
+  chip(texto, activo, alerta) {
+    return h('span', { className: 'ad-chip', 'data-si': activo ? '1' : '0', 'data-alerta': alerta ? '1' : '0' }, texto);
+  }
+
+  fila(p, i, total) {
+    const d = this.state.borrador[p.id];
+    if (!d) return null;
+    const abierto = this.state.abierto === p.id;
+    const sucio = this.sucio(p.id);
+    const t = this.state.trabajando;
+
+    const cabecera = h('div', { key: 'cab', className: 'ad-cab', onClick: () => this.setState({ abierto: abierto ? null : p.id }) }, [
+      h('div', { key: 'ord', onClick: (e) => e.stopPropagation(), style: { display: 'flex', flexDirection: 'column', gap: '3px', flex: 'none' } }, [
+        h('button', { key: 'u', type: 'button', className: 'ad-mover', disabled: i === 0 || t, title: 'Subir', onClick: () => this.mover(p.id, -1) }, '▲'),
+        h('button', { key: 'd', type: 'button', className: 'ad-mover', disabled: i === total - 1 || t, title: 'Bajar', onClick: () => this.mover(p.id, 1) }, '▼')
       ]),
-      open ? h('div', {
-        key: 'body',
-        style: { borderTop: '1px solid #EFE6DB', padding: '18px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: '14px' }
-      }, FIELDS.map(([key, label, type]) => h('label', {
-        key: key,
-        style: { display: 'flex', flexDirection: 'column', gap: '7px', gridColumn: type === 'area' ? 'span 2' : 'auto', minWidth: 0 }
-      }, [
-        h('span', { key: 'l', style: { fontSize: '11.5px', letterSpacing: '.18em', textTransform: 'uppercase', color: '#6E7B53' } }, label),
-        this.input(base.id, key, type, d[key])
-      ])).concat([
-        h('label', { key: 'oculto', style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14.5px', color: '#3A2B26' } }, [
-          h('input', {
-            key: 'c', type: 'checkbox', checked: !!d.oculto,
-            onChange: (e) => this.set(base.id, 'oculto', e.target.checked),
-            style: { width: '17px', height: '17px', accentColor: '#A85E72' }
-          }),
-          h('span', { key: 's' }, 'Ocultar de la tienda')
+      h('div', { key: 'm', className: 'ad-mini' }, d.fotos[0] ? h('img', { src: d.fotos[0], alt: '' }) : null),
+      h('div', { key: 'i', style: { flex: 1, minWidth: 0 } }, [
+        h('p', { key: 'n', style: { margin: '0 0 5px', fontFamily: SERIF, fontSize: '21px', color: INK } }, d.nombre || '(sin nombre)'),
+        h('div', { key: 'c', style: { display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' } }, [
+          h('span', { key: 'p', style: { fontSize: '13.5px', color: BODY, marginRight: '4px' } }, d.categoria + ' · ' + gs(d.precio)),
+          this.chip('Stock ' + d.stock, d.stock > 0, d.stock <= 0),
+          d.destacado ? this.chip('Destacado', true) : null,
+          d.oculto ? this.chip('Oculto', false, true) : null,
+          sucio ? this.chip('Sin guardar', false, true) : null
         ])
-      ])) : null
+      ]),
+      h('span', { key: 'x', style: { flex: 'none', fontSize: '20px', color: '#A08E88' } }, abierto ? '−' : '+')
+    ]);
+
+    if (!abierto) return h('article', { key: p.id, className: 'ad-ficha', 'data-sucio': sucio ? '1' : '0' }, [cabecera]);
+
+    const inp = (campo, tipo) => h('input', {
+      className: 'ad-campo', type: tipo || 'text', value: d[campo],
+      onChange: (e) => this.set(p.id, campo, tipo === 'number' ? e.target.value : e.target.value)
+    });
+    const area = (campo, filas) => h('textarea', {
+      className: 'ad-campo', rows: filas || 3, value: d[campo],
+      onChange: (e) => this.set(p.id, campo, e.target.value)
+    });
+    const tilde = (campo, etiqueta) => h('label', { style: { display: 'flex', alignItems: 'center', gap: '9px', fontSize: '15px', cursor: 'pointer' } }, [
+      h('input', { key: 'c', type: 'checkbox', checked: !!d[campo], onChange: (e) => this.set(p.id, campo, e.target.checked), style: { width: '17px', height: '17px', accentColor: '#A85E72' } }),
+      h('span', { key: 's' }, etiqueta)
+    ]);
+
+    return h('article', { key: p.id, className: 'ad-ficha', 'data-sucio': sucio ? '1' : '0' }, [
+      cabecera,
+      h('div', { key: 'cuerpo', style: { borderTop: '1px solid #EFE6DB', padding: '18px', display: 'flex', flexDirection: 'column', gap: '18px' } }, [
+
+        h('div', { key: 'g1', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: '14px' } }, [
+          this.campo('Nombre', '', inp('nombre')),
+          this.campo('Categoría', 'Agrupa el producto en la tienda.', inp('categoria')),
+          this.campo('Precio en guaraníes', 'Solo números.', inp('precio', 'number')),
+          this.campo('Stock', 'En cero se muestra como agotado.', inp('stock', 'number')),
+          this.campo('Etiqueta', 'Nuevo, Destacado, o vacío.', inp('badge'))
+        ]),
+
+        h('div', { key: 'g2', style: { display: 'flex', flexWrap: 'wrap', gap: '20px' } }, [
+          tilde('destacado', 'Mostrar en "Lo que más se busca"'),
+          tilde('oculto', 'Ocultar de la tienda')
+        ]),
+
+        h('div', { key: 'g3', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: '14px' } }, [
+          this.campo('Descripción corta', 'La línea que se ve en el listado.', area('desc_corta', 2)),
+          this.campo('Descripción larga', 'El texto de la página del producto.', area('desc_larga', 4)),
+          this.campo('Ficha técnica', 'Un dato por línea, con dos puntos. Ej: Batería: 36 h', area('fichaTxt', 4))
+        ]),
+
+        h('div', { key: 'fotos' }, [
+          h('p', { key: 'e', className: 'ad-etiqueta', style: { margin: '0 0 9px' } }, 'Fotos'),
+          h('div', { key: 'l', style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' } },
+            d.fotos.map(u => h('div', { key: u, className: 'ad-foto' }, [
+              h('img', { key: 'i', src: u, alt: '' }),
+              h('button', { key: 'x', type: 'button', className: 'ad-quitar', title: 'Quitar', onClick: () => this.quitarFoto(p.id, u) }, '×')
+            ])).concat([
+              h('label', {
+                key: 'add',
+                style: { cursor: 'pointer', width: '74px', height: '84px', borderRadius: '10px', border: '1px dashed #C9BCAE', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', color: '#8C837E', fontSize: '26px' }
+              }, [
+                h('input', { key: 'f', type: 'file', accept: 'image/*', multiple: true, style: { display: 'none' }, onChange: (e) => { this.subirFotos(p.id, e.target.files); e.target.value = ''; } }),
+                h('span', { key: 's' }, '+')
+              ])
+            ])),
+          h('p', { key: 'a', style: { margin: '9px 0 0', fontSize: '12.5px', color: '#8C837E' } }, 'La primera foto es la que se ve en el listado.')
+        ]),
+
+        h('div', { key: 'acc', style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', borderTop: '1px solid #EFE6DB', paddingTop: '16px' } }, [
+          h('button', { key: 'g', type: 'button', className: 'ad-btn ad-verde', disabled: t || !sucio, onClick: () => this.guardar(p.id) }, sucio ? 'Guardar cambios' : 'Sin cambios'),
+          h('a', { key: 'v', href: './index.html#/producto/' + p.id, target: '_blank', rel: 'noopener', className: 'ad-btn ad-borde', style: { display: 'inline-block' } }, 'Ver en la tienda'),
+          h('span', { key: 'sp', style: { flex: 1 } }),
+          h('button', { key: 'b', type: 'button', className: 'ad-btn ad-peligro', disabled: t, onClick: () => this.borrar(p.id, d.nombre) }, 'Borrar')
+        ])
+      ])
+    ]);
+  }
+
+  vistaProductos() {
+    const { productos } = this.state;
+    return h('div', { key: 'prod', style: { display: 'flex', flexDirection: 'column', gap: '13px' } }, [
+      h('div', { key: 'top', style: { display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', marginBottom: '4px' } }, [
+        h('button', { key: 'n', type: 'button', className: 'ad-btn ad-rosa', disabled: this.state.trabajando, onClick: () => this.nuevo() }, '+ Agregar producto'),
+        h('span', { key: 'c', style: { fontSize: '14px', color: BODY } },
+          productos.length + (productos.length === 1 ? ' producto' : ' productos') +
+          ' · ' + productos.filter(p => p.oculto).length + ' oculto(s)')
+      ])
+    ].concat(productos.length
+      ? productos.map((p, i) => this.fila(p, i, productos.length))
+      : [h('p', { key: 'v', style: { margin: 0, fontSize: '15.5px', color: BODY } }, 'Todavía no hay productos.')]
+    ));
+  }
+
+  vistaConfig() {
+    const { config, cfgBorrador } = this.state;
+    if (!config.length) {
+      return h('p', { key: 'v', style: { margin: 0, fontSize: '15.5px', lineHeight: 1.7, color: BODY } },
+        'La tabla de configuración todavía no existe. Corré 01-esquema.sql y 03-configuracion.sql en Supabase y recargá esta página.');
+    }
+    const grupos = [];
+    config.forEach(c => { if (!grupos.includes(c.grupo)) grupos.push(c.grupo); });
+    const cambios = config.filter(c => cfgBorrador[c.clave] !== c.valor).length;
+
+    return h('div', { key: 'cfg', style: { display: 'flex', flexDirection: 'column', gap: '16px' } },
+      grupos.map(g => h('section', { key: g, style: { background: '#fff', border: '1px solid #E7DED3', borderRadius: '16px', padding: '20px' } }, [
+        h('h2', { key: 't', style: { margin: '0 0 16px', fontFamily: SERIF, fontWeight: 500, fontSize: '24px', color: INK } }, g),
+        h('div', { key: 'c', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: '14px' } },
+          config.filter(c => c.grupo === g).map(c => this.campo(
+            c.etiqueta, c.ayuda,
+            c.tipo === 'parrafo'
+              ? h('textarea', { className: 'ad-campo', rows: 3, value: cfgBorrador[c.clave] || '', onChange: (e) => this.setState({ cfgBorrador: Object.assign({}, cfgBorrador, { [c.clave]: e.target.value }), aviso: '' }) })
+              : h('input', { className: 'ad-campo', type: c.tipo === 'email' ? 'email' : (c.tipo === 'tel' ? 'tel' : 'text'), value: cfgBorrador[c.clave] || '', onChange: (e) => this.setState({ cfgBorrador: Object.assign({}, cfgBorrador, { [c.clave]: e.target.value }), aviso: '' }) })
+          )))
+      ])).concat([
+        h('div', { key: 'acc', style: { display: 'flex', gap: '12px', alignItems: 'center' } }, [
+          h('button', { key: 'g', type: 'button', className: 'ad-btn ad-verde', disabled: this.state.trabajando || !cambios, onClick: () => this.guardarConfig() },
+            cambios ? 'Guardar ' + cambios + ' cambio(s)' : 'Sin cambios')
+        ])
+      ]));
+  }
+
+  vistaAcceso() {
+    return h('div', { key: 'acceso', style: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' } },
+      h('form', {
+        onSubmit: (e) => this.entrar(e),
+        style: { width: '100%', maxWidth: '380px', background: '#fff', border: '1px solid #E7DED3', borderRadius: '20px', padding: 'clamp(24px,5vw,36px)', display: 'flex', flexDirection: 'column', gap: '14px' }
+      }, [
+        h('p', { key: 'e', style: { margin: 0, fontSize: '12px', letterSpacing: '.24em', textTransform: 'uppercase', color: OLIVE } }, 'Panel'),
+        h('h1', { key: 't', style: { margin: '0 0 6px', fontFamily: SERIF, fontWeight: 500, fontSize: '32px', lineHeight: 1.1, color: INK } }, 'La Gata de Madrid'),
+        this.campo('Correo', '', h('input', { className: 'ad-campo', type: 'email', autoComplete: 'username', value: this.state.correo, onChange: (e) => this.setState({ correo: e.target.value }) })),
+        this.campo('Contraseña', '', h('input', { className: 'ad-campo', type: 'password', autoComplete: 'current-password', value: this.state.clave, onChange: (e) => this.setState({ clave: e.target.value }) })),
+        this.state.errorLogin ? h('p', { key: 'err', style: { margin: 0, fontSize: '14px', color: '#8C475C' } }, this.state.errorLogin) : null,
+        h('button', { key: 'b', type: 'submit', className: 'ad-btn ad-verde', disabled: this.state.trabajando, style: { marginTop: '4px' } }, this.state.trabajando ? 'Entrando…' : 'Entrar'),
+        h('a', { key: 'v', href: './index.html', style: { fontSize: '13px', textAlign: 'center', color: '#8C837E' } }, 'Volver a la tienda')
+      ]));
+  }
+
+  vistaPanel() {
+    const { pestana, aviso, trabajando } = this.state;
+    return h('div', { key: 'panel' }, [
+      h('header', {
+        key: 'h',
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap', padding: '14px 22px', background: INK, color: '#F7F3EE' }
+      }, [
+        h('span', { key: 't', style: { fontFamily: SERIF, fontSize: '20px', letterSpacing: '.09em', textTransform: 'uppercase' } }, 'Panel · La Gata de Madrid'),
+        h('div', { key: 'a', style: { display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12.5px', letterSpacing: '.13em', textTransform: 'uppercase' } }, [
+          h('a', { key: 'v', href: './index.html', target: '_blank', rel: 'noopener', style: { color: '#E0A8B6' } }, 'Ver tienda ↗'),
+          h('button', { key: 's', type: 'button', onClick: () => this.salir(), style: { cursor: 'pointer', background: 'transparent', border: '1px solid rgba(247,243,238,.35)', color: '#F7F3EE', borderRadius: '999px', padding: '8px 16px', fontSize: '11.5px', letterSpacing: '.13em', textTransform: 'uppercase' } }, 'Salir')
+        ])
+      ]),
+
+      h('div', { key: 'nav', style: { borderBottom: '1px solid #E7DED3', background: '#FBF8F4' } },
+        h('div', { style: { maxWidth: '1120px', margin: '0 auto', padding: '0 22px', display: 'flex', gap: '22px' } }, [
+          h('button', { key: 'p', type: 'button', className: 'ad-pestana', 'data-activa': pestana === 'productos' ? '1' : '0', onClick: () => this.setState({ pestana: 'productos', aviso: '' }) }, 'Productos'),
+          h('button', { key: 'c', type: 'button', className: 'ad-pestana', 'data-activa': pestana === 'config' ? '1' : '0', onClick: () => this.setState({ pestana: 'config', aviso: '' }) }, 'Configuración')
+        ])),
+
+      aviso ? h('div', { key: 'av', style: { background: '#EFF3E4', borderBottom: '1px solid #DDE4C9', color: '#4C5836' } },
+        h('p', { style: { maxWidth: '1120px', margin: '0 auto', padding: '12px 22px', fontSize: '14.5px' } }, aviso)) : null,
+
+      h('main', { key: 'm', style: { maxWidth: '1120px', margin: '0 auto', padding: 'clamp(20px,3vw,32px) 22px 80px' } },
+        trabajando && !this.state.productos.length
+          ? h('p', { style: { margin: 0, color: BODY } }, 'Cargando…')
+          : (pestana === 'productos' ? this.vistaProductos() : this.vistaConfig()))
     ]);
   }
 
   renderVals() {
-    const L = window.LGM;
-    return {
-      status: this.state.status,
-      save: () => this.save(),
-      exportJson: () => this.exportJson(),
-      reset: () => this.reset(),
-      rowsEl: L ? L.BASE.map(b => this.row(b)) : null
-    };
+    if (this.state.arrancando) {
+      return { contenido: h('p', { style: { padding: '40px 24px', color: BODY } }, 'Cargando…') };
+    }
+    return { contenido: this.state.sesion ? this.vistaPanel() : this.vistaAcceso() };
   }
 }
 </script>

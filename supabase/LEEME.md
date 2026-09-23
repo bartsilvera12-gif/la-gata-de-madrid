@@ -79,3 +79,24 @@ nada más. Para escribir hace falta iniciar sesión.
 
 La clave **service_role** de esa misma pantalla es lo contrario: saltea todas
 las reglas. **No me la pases y no la pongas en ningún archivo del sitio.**
+
+## Usar el panel
+
+Está en `Admin.dc.html`, al lado de la tienda: `tudominio.com/Admin.dc.html`.
+Entrás con el correo y la contraseña del usuario que creaste en el paso 5.
+
+**Productos.** Cada tarjeta se abre tocándola. Podés cambiar nombre, categoría,
+precio, stock y etiqueta; escribir las descripciones y la ficha técnica; subir
+o quitar fotos; y marcar si va en "Lo que más se busca" o si queda oculto.
+Los cambios de texto quedan en borrador hasta que tocás **Guardar cambios**:
+mientras tanto la tarjeta se marca en rosa. Las flechas ▲▼ cambian el orden en
+que se ven en la tienda y se guardan solas. **Borrar** no se puede deshacer.
+
+Un producto nuevo nace oculto y con precio cero, para que puedas completarlo
+tranquila antes de publicarlo.
+
+**Configuración.** Los datos y textos del sitio, agrupados. Cambiás lo que
+haga falta y tocás Guardar una sola vez.
+
+Todo lo que guardás se ve en la tienda apenas recargues: no hay que publicar
+ni volver a subir nada.
