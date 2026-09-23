@@ -543,22 +543,22 @@ class Component extends DCLogic {
     return h('div', { key: 'inicio', style: { animation: 'lgm-in .28s ease both' } }, [
       h('div', { key: 'hero', style: { position: 'relative', overflow: 'hidden', background: '#1A1210' } }, [
         h('video', {
-          key: 'v', src: './assets/hero-madrid.mp4', autoPlay: true, loop: true, muted: true, playsInline: true,
-          poster: './assets/hero-poster.jpg',
+          key: 'v', src: './assets/hero-cibeles.mp4', autoPlay: true, loop: true, muted: true, playsInline: true,
+          poster: './assets/hero-cibeles.jpg',
           ref: (el) => this.bindVideo(el),
           style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }
         }),
-        h('div', { key: 's', style: { position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(20,14,12,.62) 0%,rgba(20,14,12,.34) 46%,rgba(20,14,12,0) 78%)' } }),
+        h('div', { key: 's', style: { position: 'absolute', inset: 0, background: 'linear-gradient(90deg,rgba(20,14,12,.78) 0%,rgba(20,14,12,.54) 46%,rgba(20,14,12,0) 86%)' } }),
         h('div', {
           key: 'c', className: 'lgm-hero',
           style: { position: 'relative', maxWidth: '1240px', margin: '0 auto', padding: 'clamp(72px,10vw,132px) 28px clamp(72px,10vw,120px)' }
         }, [
-          h('h1', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(44px,6vw,78px)', lineHeight: 1.02, color: '#FFFFFF', textShadow: '0 2px 20px rgba(20,14,12,.5)' } }, [
+          h('h1', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(44px,6vw,78px)', lineHeight: 1.02, color: '#FFFFFF', textShadow: '0 2px 8px rgba(20,14,12,.72), 0 6px 28px rgba(20,14,12,.5)' } }, [
             L.cfg('hero_titulo'), h('br', { key: 'b' }), h('em', { key: 'i', style: { color: '#F3C9D2' } }, L.cfg('hero_subtitulo'))
           ]),
           h('div', { key: 'cta', style: { display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '32px' } }, [
             h('a', { key: 'p', onClick: () => this.go('#/productos'), style: { background: '#65734A', color: '#FFFFFF', padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase' } }, 'Ver productos'),
-            h('a', { key: 'n', onClick: () => this.go('#/nosotros'), style: { border: '1px solid rgba(253,251,248,.75)', color: '#FFFFFF', padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase' } }, 'Nosotros')
+            h('a', { key: 'n', onClick: () => this.go('#/nosotros'), style: { border: '1px solid rgba(253,251,248,.8)', background: 'rgba(20,14,12,.3)', color: '#FFFFFF', padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase' } }, 'Nosotros')
           ])
         ])
       ]),
