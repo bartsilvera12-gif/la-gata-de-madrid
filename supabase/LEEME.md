@@ -23,16 +23,16 @@ El plan gratuito alcanza de sobra para este catálogo.
 **SQL Editor → New query**, pegar todo el contenido de `01-esquema.sql` y
 **Run**. Se puede volver a ejecutar sin romper nada.
 
-Crea el esquema `tienda` con la tabla `productos`, el depósito de fotos, los
+Crea el esquema `gatademadrid` con la tabla `productos`, el depósito de fotos, los
 permisos y las reglas de seguridad. Al final devuelve la lista de políticas:
 si esa lista sale vacía, algo no se ejecutó.
 
 Las tablas **no** van en `public`, que es el esquema que Supabase expone por
 defecto y donde cualquier proyecto mira primero.
 
-### 3. Exponer el esquema `tienda` en la API
+### 3. Exponer el esquema `gatademadrid` en la API
 
-**Project Settings → API → Data API → Exposed schemas**: agregar `tienda`
+**Project Settings → API → Data API → Exposed schemas**: agregar `gatademadrid`
 a la lista (junto a los que ya estén) y guardar.
 
 Este paso no existe cuando se usa `public`, y es el que más se olvida: sin

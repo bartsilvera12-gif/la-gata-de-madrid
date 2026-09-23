@@ -3,16 +3,16 @@
 -- Dónde: Supabase → SQL Editor → New query → pegar todo → Run
 -- Se puede volver a ejecutar sin romper nada.
 --
--- Las tablas NO van en "public": viven en el esquema "tienda".
--- Ojo: después de correr esto hay que exponer "tienda" en
+-- Las tablas NO van en "public": viven en el esquema "gatademadrid".
+-- Ojo: después de correr esto hay que exponer "gatademadrid" en
 -- Project Settings → API → Exposed schemas, o la tienda no ve nada.
 -- ============================================================
 
-create schema if not exists tienda;
+create schema if not exists gatademadrid;
 
 
 -- ---------- 1) Productos ----------
-create table if not exists tienda.productos (
+create table if not exists gatademadrid.productos (
   id          text primary key,              -- slug, ej: 'redmi-buds-8-pro'
   nombre      text not null,
   categoria   text not null,
@@ -30,12 +30,12 @@ create table if not exists tienda.productos (
   actualizado timestamptz not null default now()
 );
 
-create index if not exists productos_orden_idx on tienda.productos (orden, creado);
+create index if not exists productos_orden_idx on gatademadrid.productos (orden, creado);
 
 -- "actualizado" se pone al día solo.
 -- search_path vacío y nombres completos: así la función no puede ser
 -- desviada hacia otra tabla con el mismo nombre.
-create or replace function tienda.tocar_actualizado()
+create or replace function gatademadrid.tocar_actualizado()
 returns trigger
 language plpgsql
 security invoker
@@ -46,51 +46,51 @@ begin
   return new;
 end $$;
 
-drop trigger if exists productos_actualizado on tienda.productos;
+drop trigger if exists productos_actualizado on gatademadrid.productos;
 create trigger productos_actualizado
-  before update on tienda.productos
-  for each row execute function tienda.tocar_actualizado();
+  before update on gatademadrid.productos
+  for each row execute function gatademadrid.tocar_actualizado();
 
 
 -- ---------- 2) Permisos de rol ----------
 -- En "public" Supabase los da solos; en un esquema propio hay que darlos.
 -- Es el portón: sin esto, ni siquiera se llega a las reglas por fila.
-grant usage on schema tienda to anon, authenticated;
+grant usage on schema gatademadrid to anon, authenticated;
 
-grant select                         on tienda.productos to anon;
-grant select, insert, update, delete on tienda.productos to authenticated;
+grant select                         on gatademadrid.productos to anon;
+grant select, insert, update, delete on gatademadrid.productos to authenticated;
 
 -- Para las tablas que se creen más adelante en este esquema
-alter default privileges in schema tienda
+alter default privileges in schema gatademadrid
   grant select on tables to anon;
-alter default privileges in schema tienda
+alter default privileges in schema gatademadrid
   grant select, insert, update, delete on tables to authenticated;
 
 
 -- ---------- 3) Quién puede hacer qué, fila por fila ----------
-alter table tienda.productos enable row level security;
+alter table gatademadrid.productos enable row level security;
 
 -- Visitantes: solo leen los productos visibles.
-drop policy if exists "lectura publica" on tienda.productos;
-create policy "lectura publica" on tienda.productos
+drop policy if exists "lectura publica" on gatademadrid.productos;
+create policy "lectura publica" on gatademadrid.productos
   for select to anon
   using (oculto = false);
 
 -- Administradora (sesión iniciada): ve y edita todo, incluidos los ocultos.
-drop policy if exists "admin lee todo" on tienda.productos;
-create policy "admin lee todo" on tienda.productos
+drop policy if exists "admin lee todo" on gatademadrid.productos;
+create policy "admin lee todo" on gatademadrid.productos
   for select to authenticated using (true);
 
-drop policy if exists "admin inserta" on tienda.productos;
-create policy "admin inserta" on tienda.productos
+drop policy if exists "admin inserta" on gatademadrid.productos;
+create policy "admin inserta" on gatademadrid.productos
   for insert to authenticated with check (true);
 
-drop policy if exists "admin edita" on tienda.productos;
-create policy "admin edita" on tienda.productos
+drop policy if exists "admin edita" on gatademadrid.productos;
+create policy "admin edita" on gatademadrid.productos
   for update to authenticated using (true) with check (true);
 
-drop policy if exists "admin borra" on tienda.productos;
-create policy "admin borra" on tienda.productos
+drop policy if exists "admin borra" on gatademadrid.productos;
+create policy "admin borra" on gatademadrid.productos
   for delete to authenticated using (true);
 
 -- No hay política de insert/update/delete para "anon": con RLS activado,
@@ -126,5 +126,5 @@ create policy "fotos admin borra" on storage.objects
 -- Debe devolver una fila por política. Si sale vacío, algo no corrió.
 select schemaname, tablename, policyname, roles, cmd
 from pg_policies
-where schemaname = 'tienda'
+where schemaname = 'gatademadrid'
 order by policyname;
