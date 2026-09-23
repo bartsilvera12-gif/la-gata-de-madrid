@@ -66,6 +66,19 @@
     letter-spacing:.14em; text-transform:uppercase; color:#8C837E; border-bottom:2px solid transparent }
   .pn-pestana[data-activa="1"] { color:#3A2B26; border-bottom-color:#A85E72 }
 
+  .pn-barra { display:flex; flex-wrap:wrap; gap:10px; align-items:center }
+  .pn-buscar { position:relative; flex:1 1 240px; min-width:0; max-width:380px }
+  .pn-buscar input { padding-right:38px }
+  .pn-limpiar { position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    width:24px; height:24px; border:0; border-radius:999px; background:#EFE6DB; color:#6B5F5A;
+    cursor:pointer; font-size:14px; line-height:1; padding:0 }
+  .pn-limpiar:hover { background:#E3D3CE; color:#8C475C }
+  .pn-pag { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-top:6px }
+  .pn-pagbtn { cursor:pointer; border:1px solid #DED3C7; background:#fff; color:#3A2B26;
+    border-radius:999px; padding:9px 16px; font-size:12.5px; letter-spacing:.1em; text-transform:uppercase }
+  .pn-pagbtn:hover:enabled { border-color:#A85E72; color:#A85E72 }
+  .pn-pagbtn:disabled { opacity:.4; cursor:default }
+
   /* Con tres pestañas la fila no entra en un teléfono: se desliza. */
   .pn-pestanas { display:flex; gap:22px; overflow-x:auto; scrollbar-width:none;
     -webkit-overflow-scrolling:touch }
@@ -78,6 +91,9 @@
     .pn-cab { gap:10px; padding:11px 12px; flex-wrap:wrap }
     .pn-cat-nom { flex:1 1 100% !important }
     .pn-cat-acc { flex:1 1 100% !important; justify-content:flex-end }
+    .pn-info { flex:1 1 100% !important }
+    .pn-editar { flex:1 1 100% !important; text-align:center }
+    .pn-buscar { max-width:none }
     .pn-btn { padding:12px 18px }
     .pn-pestanas { gap:16px }
     .pn-pestana { font-size:12px }
@@ -104,6 +120,7 @@ const sb = window.supabase.createClient(API, CLAVE, {
 
 const INK = '#3A2B26', BODY = '#5A5350', OLIVE = '#6E7B53', SERIF = "'Cormorant Garamond',serif";
 const gs = (n) => 'Gs. ' + Number(n || 0).toLocaleString('es-PY');
+const POR_PAGINA = 20;
 
 // Las fotos viejas se guardaron como "./assets/x.jpg", que servía cuando todo
 // colgaba de la raíz. El panel vive en /admin/, así que desde acá eso apunta a
@@ -136,7 +153,8 @@ class Component extends DCLogic {
   state = {
     sesion: null, arrancando: true,
     pestana: 'productos',
-    productos: [], config: [], categorias: [],
+    productos: [], config: [], categorias: [], conteos: {},
+    total: 0, pagina: 1, busqueda: '', buscado: '', filtroCat: '',
     borrador: {}, cfgBorrador: {},
     abierto: null, aviso: '', trabajando: false,
     correo: '', clave: '', errorLogin: ''
@@ -198,24 +216,80 @@ class Component extends DCLogic {
   cargar() {
     this.setState({ trabajando: true });
     return Promise.all([
-      sb.from('productos').select('*').order('orden', { ascending: true }).order('creado', { ascending: true }),
       sb.from('configuracion').select('*').order('orden', { ascending: true }),
       sb.from('categorias').select('*').order('orden', { ascending: true })
-    ]).then(([pr, cf, ct]) => {
-      if (pr.error) throw pr.error;
-      const productos = pr.data || [];
-      const borrador = {};
-      productos.forEach(p => { borrador[p.id] = this.aBorrador(p); });
+    ]).then(([cf, ct]) => {
       const config = cf.error ? [] : (cf.data || []);
       const cfgBorrador = {};
       config.forEach(c => { cfgBorrador[c.clave] = c.valor; });
+      const categorias = ct.error ? [] : (ct.data || []);
       this.setState({
-        productos, borrador, config, cfgBorrador,
-        categorias: ct.error ? [] : (ct.data || []),
-        trabajando: false,
+        config, cfgBorrador, categorias,
         aviso: cf.error ? 'Los productos cargaron. La configuración todavía no existe: falta correr 01-esquema.sql y 03-configuracion.sql.' : ''
       });
+      this.contarPorCategoria(categorias);
+      return this.cargarProductos({});
     }).catch(err => this.setState({ trabajando: false, aviso: 'No se pudo cargar: ' + err.message }));
+  }
+
+  // Trae solo la página que se está mirando. Con mil productos se piden
+  // veinte, no mil: el filtrado y el conteo los hace la base.
+  cargarProductos(op) {
+    const pagina   = op.pagina   !== undefined ? op.pagina   : this.state.pagina;
+    const buscado  = op.buscado  !== undefined ? op.buscado  : this.state.buscado;
+    const filtroCat= op.filtroCat!== undefined ? op.filtroCat: this.state.filtroCat;
+    const desde = (pagina - 1) * POR_PAGINA;
+
+    let q = sb.from('productos').select('*', { count: 'exact' });
+    if (buscado) {
+      // Se limpian los caracteres que PostgREST usa como separadores, para
+      // que lo que escriba la usuaria no rompa la consulta.
+      const t = buscado.replace(/[,()%*\\]/g, ' ').trim();
+      if (t) q = q.or('nombre.ilike.%' + t + '%,desc_corta.ilike.%' + t + '%,categoria.ilike.%' + t + '%');
+    }
+    if (filtroCat) q = q.eq('categoria', filtroCat);
+
+    this.setState({ trabajando: true });
+    return q.order('orden', { ascending: true }).order('creado', { ascending: true })
+      .range(desde, desde + POR_PAGINA - 1)
+      .then(({ data, count, error }) => {
+        if (error) { this.setState({ trabajando: false, aviso: 'No se pudo cargar: ' + error.message }); return; }
+        const productos = data || [];
+        const borrador = {};
+        productos.forEach(p => { borrador[p.id] = this.aBorrador(p); });
+        this.setState({
+          productos, borrador, pagina, buscado, filtroCat,
+          total: count === null ? productos.length : count,
+          trabajando: false
+        });
+      });
+  }
+
+  // Cuántos productos tiene cada categoría. Antes se contaba sobre la lista
+  // cargada; con paginación esa lista ya no está entera en el navegador.
+  contarPorCategoria(categorias) {
+    if (!categorias.length) { this.setState({ conteos: {} }); return; }
+    Promise.all(categorias.map(c =>
+      sb.from('productos').select('id', { count: 'exact', head: true }).eq('categoria', c.nombre)
+        .then(({ count }) => [c.nombre, count || 0])
+    )).then(pares => {
+      const conteos = {};
+      pares.forEach(([n, c]) => { conteos[n] = c; });
+      this.setState({ conteos });
+    });
+  }
+
+  hayCambiosSinGuardar() {
+    return this.state.productos.some(p => this.sucio(p.id));
+  }
+
+  // Cambiar de página o de filtro descarta lo que se esté editando, así que
+  // primero se avisa.
+  irA(cambios) {
+    if (this.hayCambiosSinGuardar() &&
+        !window.confirm('Hay cambios sin guardar en esta página. ¿Seguir sin guardarlos?')) return;
+    this.setState({ abierto: null, aviso: '' });
+    this.cargarProductos(cambios);
   }
 
   aBorrador(p) {
@@ -254,6 +328,7 @@ class Component extends DCLogic {
       if (error) { this.setState({ trabajando: false, aviso: 'No se pudo guardar: ' + error.message }); return; }
       const productos = this.state.productos.map(p => p.id === id ? data[0] : p);
       this.setState({ productos, trabajando: false, aviso: 'Guardado ✓' });
+      this.contarPorCategoria(this.state.categorias);
     });
   }
 
@@ -274,9 +349,12 @@ class Component extends DCLogic {
       const p = data[0];
       const borrador = Object.assign({}, this.state.borrador);
       borrador[p.id] = this.aBorrador(p);
+      // Se limpian búsqueda y filtro y se vuelve a la primera página: si no,
+      // el producto recién creado podría no entrar en lo que se está viendo.
       this.setState({
-        productos: [p].concat(this.state.productos), borrador,
-        abierto: p.id, trabajando: false,
+        productos: [p].concat(this.state.productos).slice(0, POR_PAGINA), borrador,
+        abierto: p.id, trabajando: false, pagina: 1, busqueda: '', buscado: '', filtroCat: '',
+        total: this.state.total + 1,
         aviso: 'Producto creado, oculto por ahora. Completalo y destildá "Ocultar" para publicarlo.'
       });
     });
@@ -289,8 +367,10 @@ class Component extends DCLogic {
       if (error) { this.setState({ trabajando: false, aviso: 'No se pudo borrar: ' + error.message }); return; }
       this.setState({
         productos: this.state.productos.filter(p => p.id !== id),
+        total: Math.max(0, this.state.total - 1),
         abierto: null, trabajando: false, aviso: 'Producto borrado.'
       });
+      this.contarPorCategoria(this.state.categorias);
     });
   }
 
@@ -344,7 +424,8 @@ class Component extends DCLogic {
   }
 
   cuantosUsan(nombre) {
-    return this.state.productos.filter(p => (this.state.borrador[p.id] || p).categoria === nombre).length;
+    const n = this.state.conteos[nombre];
+    return n === undefined ? 0 : n;
   }
 
   borrarCategoria(nombre) {
@@ -451,12 +532,13 @@ class Component extends DCLogic {
     const t = this.state.trabajando;
 
     const cabecera = h('div', { key: 'cab', className: 'pn-cab', onClick: () => this.setState({ abierto: abierto ? null : p.id }) }, [
+      this.state.buscado || this.state.filtroCat ? null :
       h('div', { key: 'ord', onClick: (e) => e.stopPropagation(), style: { display: 'flex', flexDirection: 'column', gap: '3px', flex: 'none' } }, [
-        h('button', { key: 'u', type: 'button', className: 'pn-mover', disabled: i === 0 || t, title: 'Subir', onClick: () => this.mover(p.id, -1) }, '▲'),
-        h('button', { key: 'd', type: 'button', className: 'pn-mover', disabled: i === total - 1 || t, title: 'Bajar', onClick: () => this.mover(p.id, 1) }, '▼')
+        h('button', { key: 'u', type: 'button', className: 'pn-mover', disabled: (i === 0 && this.state.pagina === 1) || t, title: 'Subir', onClick: () => this.mover(p.id, -1) }, '▲'),
+        h('button', { key: 'd', type: 'button', className: 'pn-mover', disabled: (i === total - 1 && this.state.pagina * POR_PAGINA >= this.state.total) || t, title: 'Bajar', onClick: () => this.mover(p.id, 1) }, '▼')
       ]),
       h('div', { key: 'm', className: 'pn-mini' }, d.fotos[0] ? h('img', { src: urlFoto(d.fotos[0]), alt: '' }) : null),
-      h('div', { key: 'i', style: { flex: 1, minWidth: 0 } }, [
+      h('div', { key: 'i', className: 'pn-info', style: { flex: 1, minWidth: 0 } }, [
         h('p', { key: 'n', style: { margin: '0 0 5px', fontFamily: SERIF, fontSize: '21px', color: INK } }, d.nombre || '(sin nombre)'),
         h('div', { key: 'c', style: { display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' } }, [
           h('span', { key: 'p', style: { fontSize: '13.5px', color: BODY, marginRight: '4px' } }, d.categoria + ' · ' + gs(d.precio)),
@@ -466,7 +548,7 @@ class Component extends DCLogic {
           sucio ? this.chip('Sin guardar', false, true) : null
         ])
       ]),
-      h('span', { key: 'x', className: 'pn-btn pn-borde', style: { flex: 'none', padding: '9px 18px' } },
+      h('span', { key: 'x', className: 'pn-btn pn-borde pn-editar', style: { flex: 'none', padding: '9px 18px' } },
         abierto ? 'Cerrar' : 'Editar')
     ]);
 
@@ -541,18 +623,64 @@ class Component extends DCLogic {
   }
 
   vistaProductos() {
-    const { productos } = this.state;
+    const { productos, total, pagina, busqueda, buscado, filtroCat, trabajando } = this.state;
+    const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
+    const desde = total ? (pagina - 1) * POR_PAGINA + 1 : 0;
+    const hasta = Math.min(pagina * POR_PAGINA, total);
+    const filtrando = !!(buscado || filtroCat);
+
+    const buscar = h('div', { key: 'b', className: 'pn-buscar' }, [
+      h('input', {
+        key: 'i', className: 'pn-campo', type: 'search', placeholder: 'Buscar por nombre, descripción o categoría',
+        value: busqueda,
+        onChange: (e) => {
+          const v = e.target.value;
+          this.setState({ busqueda: v });
+          // Se espera a que deje de escribir, para no consultar por cada tecla.
+          clearTimeout(this._tBuscar);
+          this._tBuscar = setTimeout(() => this.irA({ buscado: v, pagina: 1 }), 350);
+        },
+        onKeyDown: (e) => {
+          if (e.key === 'Enter') { clearTimeout(this._tBuscar); this.irA({ buscado: busqueda, pagina: 1 }); }
+        }
+      }),
+      busqueda ? h('button', {
+        key: 'x', type: 'button', className: 'pn-limpiar', title: 'Limpiar',
+        onClick: () => { clearTimeout(this._tBuscar); this.setState({ busqueda: '' }); this.irA({ buscado: '', pagina: 1 }); }
+      }, '×') : null
+    ]);
+
+    const filtro = h('select', {
+      key: 'f', className: 'pn-campo', style: { flex: '0 1 200px', width: 'auto' },
+      value: filtroCat,
+      onChange: (e) => this.irA({ filtroCat: e.target.value, pagina: 1 })
+    }, [h('option', { key: '', value: '' }, 'Todas las categorías')]
+      .concat(this.state.categorias.map(c => h('option', { key: c.nombre, value: c.nombre }, c.nombre))));
+
+    const resumen = total === 0
+      ? (filtrando ? 'Ningún producto coincide' : 'Todavía no hay productos')
+      : (total <= POR_PAGINA
+        ? total + (total === 1 ? ' producto' : ' productos')
+        : desde + '–' + hasta + ' de ' + total + ' productos');
+
+    const paginador = paginas > 1 ? h('div', { key: 'pag', className: 'pn-pag' }, [
+      h('button', { key: 'a', type: 'button', className: 'pn-pagbtn', disabled: pagina <= 1 || trabajando, onClick: () => this.irA({ pagina: pagina - 1 }) }, '← Anterior'),
+      h('span', { key: 'n', style: { fontSize: '14px', color: BODY } }, 'Página ' + pagina + ' de ' + paginas),
+      h('button', { key: 's', type: 'button', className: 'pn-pagbtn', disabled: pagina >= paginas || trabajando, onClick: () => this.irA({ pagina: pagina + 1 }) }, 'Siguiente →')
+    ]) : null;
+
     return h('div', { key: 'prod', style: { display: 'flex', flexDirection: 'column', gap: '13px' } }, [
-      h('div', { key: 'top', style: { display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center', marginBottom: '4px' } }, [
-        h('button', { key: 'n', type: 'button', className: 'pn-btn pn-rosa', disabled: this.state.trabajando, onClick: () => this.nuevo() }, '+ Agregar producto'),
-        h('span', { key: 'c', style: { fontSize: '14px', color: BODY } },
-          productos.length + (productos.length === 1 ? ' producto' : ' productos') +
-          ' · ' + productos.filter(p => p.oculto).length + ' oculto(s)')
-      ])
+      h('div', { key: 'top', className: 'pn-barra', style: { marginBottom: '2px' } }, [
+        h('button', { key: 'n', type: 'button', className: 'pn-btn pn-rosa', disabled: trabajando, onClick: () => this.nuevo() }, '+ Agregar producto'),
+        buscar, filtro
+      ]),
+      h('p', { key: 'r', style: { margin: 0, fontSize: '14px', color: BODY } }, resumen),
+      filtrando ? h('p', { key: 'av', style: { margin: 0, fontSize: '13px', color: '#8C837E' } },
+        'Con un filtro activo las flechas de orden no se muestran: el orden se cambia sobre la lista completa.') : null
     ].concat(productos.length
       ? productos.map((p, i) => this.fila(p, i, productos.length))
-      : [h('p', { key: 'v', style: { margin: 0, fontSize: '15.5px', color: BODY } }, 'Todavía no hay productos.')]
-    ));
+      : []
+    ).concat([paginador]));
   }
 
   vistaCategorias() {
