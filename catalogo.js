@@ -7,6 +7,13 @@
    La clave de acá es la pública ("anon"): solo permite leer. Cualquier cambio
    exige iniciar sesión, y eso solo pasa en el panel. */
 (function () {
+  // El navegador ejecuta este archivo dos veces: una al leer el <helmet> en
+  // el cuerpo y otra cuando el framework lo copia al <head>. Sin este corte
+  // quedan dos catálogos en memoria: la tienda se suscribe a uno y los datos
+  // llegan al otro, así que nunca se entera de que llegaron. Además dobla las
+  // consultas a la base.
+  if (window.LGM) return;
+
   var API = 'https://api.neura.com.py';
   var ESQUEMA = 'gatademadrid';
   var CLAVE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc0MTAxNDYxLCJleHAiOjE5MzE3ODE0NjF9.7_wAph8IolPMXtgfpezSwS5XR62IdD__qhqCywLDp3Q';
