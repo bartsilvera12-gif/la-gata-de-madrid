@@ -259,7 +259,12 @@ class Component extends DCLogic {
 
   nuevo() {
     const base = 'producto-' + Date.now().toString(36);
-    const orden = Math.max(0, ...this.state.productos.map(p => p.orden || 0)) + 10;
+    // Va arriba de todo: un producto recien creado es el que hay que
+    // completar, y no tiene sentido ir a buscarlo al final de la lista.
+    // El orden puede ser negativo, asi cada nuevo queda por encima del
+    // anterior sin tener que renumerar los demas.
+    const ordenes = this.state.productos.map(p => p.orden || 0);
+    const orden = (ordenes.length ? Math.min.apply(null, ordenes) : 10) - 10;
     this.setState({ trabajando: true });
     sb.from('productos').insert({
       id: base, nombre: 'Producto nuevo', categoria: 'Sin categoría',
@@ -270,7 +275,7 @@ class Component extends DCLogic {
       const borrador = Object.assign({}, this.state.borrador);
       borrador[p.id] = this.aBorrador(p);
       this.setState({
-        productos: this.state.productos.concat([p]), borrador,
+        productos: [p].concat(this.state.productos), borrador,
         abierto: p.id, trabajando: false,
         aviso: 'Producto creado, oculto por ahora. Completalo y destildá "Ocultar" para publicarlo.'
       });
