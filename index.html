@@ -133,9 +133,9 @@
     .lgm-hero { padding-left:18px !important; padding-right:18px !important }
     .lgm-band { padding-left:14px !important; padding-right:14px !important }
     .lgm-bandcat { width:clamp(210px,62vw,300px) !important; height:clamp(160px,46vw,230px) !important }
-    .lgm-about { min-height:0 !important }
-    .lgm-about .lgm-about-txt { padding:22px 18px 26px !important }
-    .lgm-about .lgm-about-veil { background:linear-gradient(180deg,rgba(20,14,12,.55) 0%,rgba(20,14,12,.7) 50%,rgba(20,14,12,.9) 100%) !important }
+    .lgm-about { grid-template-columns:minmax(0,1fr) !important }
+    .lgm-about .lgm-about-txt { padding:26px 20px 28px !important }
+    .lgm-about-foto { min-height:clamp(280px,74vw,380px) !important }
     .lgm-foot-outer { padding:36px 18px 22px !important }
     .lgm-foot { grid-template-columns:minmax(0,1fr) !important; gap:24px !important }
     .lgm-footcat { justify-self:center !important; align-self:center !important; width:clamp(120px,38vw,180px) !important }
@@ -179,7 +179,7 @@
   <footer class="lgm-foot-outer" style="position:relative;z-index:1;border-top:1px solid #EDDCD8;background:#FCEFF0;padding:48px 28px 26px;margin-top:64px">
     <div class="lgm-foot" style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(220px,1.4fr) auto auto minmax(0,auto);gap:24px clamp(24px,4vw,56px);align-items:start">
       <div>
-        <p style="margin:0 0 12px;font-family:'Cormorant Garamond',serif;font-size:27px;letter-spacing:.06em;color:#3A2B26">La Gata de Madrid.</p>
+        <img src="./assets/logo-gata-madrid.jpg" alt="La Gata de Madrid" style="display:block;width:100%;max-width:240px;height:auto;margin:0 0 16px;border-radius:12px;border:1px solid #E5D3CE">
         <p style="margin:0;max-width:34ch;font-size:15px;line-height:1.7;color:#5A5350">{{ pieDescripcion }}</p>
       </div>
       <div>
@@ -634,20 +634,20 @@ class Component extends DCLogic {
       ], { paddingTop: 'clamp(48px,6vw,76px)' }),
       this.section([
         h('div', {
-          key: 'box', className: 'lgm-zoom lgm-about',
-          style: { position: 'relative', display: 'flex', alignItems: 'flex-end', minHeight: 'clamp(420px,48vw,560px)', border: '1px solid ' + LINE, borderRadius: '18px', overflow: 'hidden', background: SOFT }
+          key: 'box', className: 'lgm-about',
+          style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.08fr) minmax(0,.92fr)', alignItems: 'stretch', border: '1px solid #EDD6DB', borderRadius: '18px', overflow: 'hidden', background: '#F6DFE4' }
         }, [
-          h('img', {
-            key: 'bg', src: './assets/logo-gata-madrid.jpg', alt: 'La Gata de Madrid',
-            style: { position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%', objectFit: 'cover' }
-          }),
-          h('div', { key: 'veil', className: 'lgm-about-veil', style: { position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(20,14,12,.12) 0%,rgba(20,14,12,.5) 46%,rgba(20,14,12,.88) 100%)' } }),
-          h('div', { key: 'l', className: 'lgm-about-txt', style: { position: 'relative', width: '100%', maxWidth: '62ch', padding: 'clamp(26px,4vw,54px)' } }, [
-            h('p', { key: 'e', style: { margin: '0 0 12px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#E6DACA' } }, '— Nosotros'),
-            h('h2', { key: 'h', style: { margin: '0 0 16px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,44px)', lineHeight: 1.12, color: '#FFFFFF', textShadow: '0 2px 18px rgba(20,14,12,.6)' } }, 'Una gata negra, un cascabel dorado y muchas ganas de encontrar cosas lindas.'),
-            h('p', { key: 'p', style: { margin: '0 0 22px', maxWidth: '52ch', fontSize: '16px', lineHeight: 1.8, color: '#F0E6E1', textShadow: '0 1px 12px rgba(20,14,12,.55)' } }, 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. Atendemos por WhatsApp y envolvemos cada pedido a mano.'),
-            h('a', { key: 'a', onClick: () => this.go('#/nosotros'), style: { display: 'inline-block', background: ROSE, color: '#FFFFFF', padding: '15px 28px', borderRadius: '999px', fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase' } }, 'Conocé la historia')
-          ])
+          h('div', { key: 'l', className: 'lgm-about-txt', style: { padding: 'clamp(28px,4vw,56px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' } }, [
+            h('p', { key: 'e', style: { margin: '0 0 12px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#8E4258' } }, '— Nosotros'),
+            h('h2', { key: 'h', style: { margin: '0 0 16px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(28px,3.2vw,42px)', lineHeight: 1.12, color: INK } }, L.cfg('nosotros_titulo')),
+            h('p', { key: 'p', style: { margin: '0 0 24px', maxWidth: '46ch', fontSize: '16px', lineHeight: 1.8, color: BODY } }, 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. Atendemos por WhatsApp y envolvemos cada pedido a mano.'),
+            h('a', { key: 'a', onClick: () => this.go('#/nosotros'), style: { alignSelf: 'flex-start', background: ROSE, color: '#FFFFFF', padding: '15px 28px', borderRadius: '999px', fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase' } }, 'Conocé la historia')
+          ]),
+          h('div', { key: 'f', className: 'lgm-zoom lgm-about-foto', style: { position: 'relative', minHeight: 'clamp(320px,36vw,470px)', background: '#EFD3D9' } },
+            h('img', {
+              src: './assets/gata-nala.jpg', alt: 'La gata de la casa',
+              style: { position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 28%' }
+            }))
         ])
       ], { paddingTop: 'clamp(48px,6vw,76px)' })
     ]);
