@@ -203,6 +203,30 @@
 
   .pn-vacio { text-align:center; padding:50px 20px; color:var(--texto) }
 
+  /* ---- Diálogo propio, en vez del cuadro gris del navegador ---- */
+  .pn-velo { position:fixed; inset:0; z-index:60; display:flex; align-items:center;
+    justify-content:center; padding:22px; background:rgba(58,43,38,.42);
+    backdrop-filter:blur(3px); animation:pn-aparece .16s ease both }
+  .pn-dialogo { width:100%; max-width:420px; background:var(--papel);
+    border:1px solid var(--linea); border-radius:22px; padding:clamp(24px,4vw,30px);
+    box-shadow:0 30px 70px -30px rgba(58,43,38,.6);
+    display:flex; flex-direction:column; gap:14px; animation:pn-sube .2s cubic-bezier(.2,.8,.2,1) both }
+  .pn-dialogo h2 { margin:0; font-family:var(--serif); font-weight:600; font-size:25px;
+    line-height:1.15; color:var(--tinta) }
+  .pn-dialogo p { margin:0; font-size:15px; line-height:1.65; color:var(--texto) }
+  .pn-dialogo-acc { display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;
+    margin-top:4px }
+  @keyframes pn-aparece { from { opacity:0 } to { opacity:1 } }
+  @keyframes pn-sube { from { opacity:0; transform:translateY(12px) scale(.98) }
+                       to { opacity:1; transform:none } }
+  @media (prefers-reduced-motion: reduce){
+    .pn-velo, .pn-dialogo { animation:none }
+  }
+  @media (max-width: 680px){
+    .pn-dialogo-acc { flex-direction:column-reverse }
+    .pn-dialogo-acc .pn-btn { width:100% }
+  }
+
   @media (max-width: 680px){
     .pn-top { padding:13px 18px }
     .pn-pestanas, .pn-main { padding-left:18px; padding-right:18px }
@@ -286,7 +310,8 @@ class Component extends DCLogic {
     total: 0, pagina: 1, busqueda: '', buscado: '', filtroCat: '',
     borrador: {}, cfgBorrador: {},
     abierto: null, aviso: '', trabajando: false,
-    correo: '', clave: '', errorLogin: ''
+    correo: '', clave: '', errorLogin: '',
+    dialogo: null
   };
 
   componentDidMount() {
@@ -316,6 +341,69 @@ class Component extends DCLogic {
       this.setState({ sesion: sesion, arrancando: false, errorLogin: '' });
       this.cargar();
     });
+  }
+
+  // ---------- Diálogos ----------
+  // Reemplazan a prompt() y confirm(), que cada navegador dibuja a su manera
+  // y anuncian el dominio. Devuelven una promesa para que quien los llama se
+  // lea igual de simple que antes.
+  abrirDialogo(cfg) {
+    return new Promise((resolver) => {
+      this._enfocado = false;
+      this.setState({ dialogo: Object.assign({ valor: '' }, cfg, { resolver: resolver }) });
+    });
+  }
+
+  cerrarDialogo(resultado) {
+    const d = this.state.dialogo;
+    this.setState({ dialogo: null });
+    if (d && d.resolver) d.resolver(resultado);
+  }
+
+  pedirTexto(cfg) {
+    return this.abrirDialogo(Object.assign({ tipo: 'texto' }, cfg));
+  }
+
+  confirmar(cfg) {
+    return this.abrirDialogo(Object.assign({ tipo: 'confirmar' }, cfg)).then(r => r === true);
+  }
+
+  vistaDialogo() {
+    const d = this.state.dialogo;
+    if (!d) return null;
+    const aceptar = () => this.cerrarDialogo(d.tipo === 'texto' ? (d.valor || '') : true);
+    const cancelar = () => this.cerrarDialogo(d.tipo === 'texto' ? null : false);
+
+    return h('div', {
+      key: 'velo', className: 'pn-velo', onClick: cancelar,
+      onKeyDown: (e) => { if (e.key === 'Escape') { e.stopPropagation(); cancelar(); } }
+    }, h('div', {
+      className: 'pn-dialogo', role: 'dialog', 'aria-modal': 'true',
+      onClick: (e) => e.stopPropagation()
+    }, [
+      h('h2', { key: 't' }, d.titulo),
+      d.mensaje ? h('p', { key: 'm' }, d.mensaje) : null,
+      d.tipo === 'texto' ? h('input', {
+        key: 'i', className: 'pn-campo', type: 'text', value: d.valor || '',
+        placeholder: d.placeholder || '',
+        ref: (el) => {
+          if (el && !this._enfocado) { this._enfocado = true; setTimeout(() => { el.focus(); el.select(); }, 30); }
+        },
+        onChange: (e) => this.setState({ dialogo: Object.assign({}, d, { valor: e.target.value }) }),
+        onKeyDown: (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); aceptar(); }
+          if (e.key === 'Escape') { e.preventDefault(); cancelar(); }
+        }
+      }) : null,
+      h('div', { key: 'a', className: 'pn-dialogo-acc' }, [
+        h('button', { key: 'c', type: 'button', className: 'pn-btn pn-borde', onClick: cancelar }, d.etiquetaCancelar || 'Cancelar'),
+        h('button', {
+          key: 'o', type: 'button',
+          className: 'pn-btn ' + (d.peligro ? 'pn-peligro' : 'pn-rosa'),
+          onClick: aceptar
+        }, d.etiquetaOk || 'Aceptar')
+      ])
+    ]));
   }
 
   // ---------- Acceso ----------
@@ -415,10 +503,16 @@ class Component extends DCLogic {
   // Cambiar de página o de filtro descarta lo que se esté editando, así que
   // primero se avisa.
   irA(cambios) {
-    if (this.hayCambiosSinGuardar() &&
-        !window.confirm('Hay cambios sin guardar en esta página. ¿Seguir sin guardarlos?')) return;
-    this.setState({ abierto: null, aviso: '' });
-    this.cargarProductos(cambios);
+    const seguir = () => {
+      this.setState({ abierto: null, aviso: '' });
+      this.cargarProductos(cambios);
+    };
+    if (!this.hayCambiosSinGuardar()) { seguir(); return; }
+    this.confirmar({
+      titulo: 'Tenés cambios sin guardar',
+      mensaje: 'Si salís de esta página se pierden. ¿Seguir igual?',
+      etiquetaOk: 'Seguir sin guardar', peligro: true
+    }).then(ok => { if (ok) seguir(); });
   }
 
   aBorrador(p) {
@@ -490,7 +584,14 @@ class Component extends DCLogic {
   }
 
   borrar(id, nombre) {
-    if (!window.confirm('¿Borrar "' + nombre + '"? No se puede deshacer.')) return;
+    this.confirmar({
+      titulo: '¿Borrar este producto?',
+      mensaje: '"' + nombre + '" se va a borrar de la tienda. Esto no se puede deshacer.',
+      etiquetaOk: 'Sí, borrar', peligro: true
+    }).then(ok => { if (ok) this.borrarConfirmado(id); });
+  }
+
+  borrarConfirmado(id) {
     this.setState({ trabajando: true });
     sb.from('productos').delete().eq('id', id).then(({ error }) => {
       if (error) { this.setState({ trabajando: false, aviso: 'No se pudo borrar: ' + error.message }); return; }
@@ -523,12 +624,23 @@ class Component extends DCLogic {
 
   // ---------- Categorías ----------
   nuevaCategoria() {
-    const nombre = (window.prompt('Nombre de la categoría nueva:') || '').trim();
-    if (!nombre) return;
-    if (this.state.categorias.some(c => c.nombre.toLowerCase() === nombre.toLowerCase())) {
-      this.setState({ aviso: 'Ya existe una categoría llamada "' + nombre + '".' });
-      return;
-    }
+    this.pedirTexto({
+      titulo: 'Nueva categoría',
+      mensaje: 'Así va a aparecer en la tienda.',
+      placeholder: 'Ej: Maquillaje',
+      etiquetaOk: 'Crear'
+    }).then(txt => {
+      const nombre = (txt || '').trim();
+      if (!nombre) return;
+      if (this.state.categorias.some(c => c.nombre.toLowerCase() === nombre.toLowerCase())) {
+        this.setState({ aviso: 'Ya existe una categoría llamada "' + nombre + '".' });
+        return;
+      }
+      this.crearCategoria(nombre);
+    });
+  }
+
+  crearCategoria(nombre) {
     const orden = Math.max(0, ...this.state.categorias.map(c => c.orden || 0)) + 10;
     this.setState({ trabajando: true });
     sb.from('categorias').insert({ nombre: nombre, orden: orden }).select().then(({ data, error }) => {
@@ -541,8 +653,18 @@ class Component extends DCLogic {
   }
 
   renombrarCategoria(vieja) {
-    const nueva = (window.prompt('Nuevo nombre para "' + vieja + '":', vieja) || '').trim();
-    if (!nueva || nueva === vieja) return;
+    this.pedirTexto({
+      titulo: 'Renombrar categoría',
+      mensaje: 'Se actualizan también todos los productos que la usan.',
+      valor: vieja, etiquetaOk: 'Renombrar'
+    }).then(txt => {
+      const nueva = (txt || '').trim();
+      if (!nueva || nueva === vieja) return;
+      this.renombrarConfirmado(vieja, nueva);
+    });
+  }
+
+  renombrarConfirmado(vieja, nueva) {
     this.setState({ trabajando: true });
     // Una sola llamada: renombra la categoría y todos sus productos a la vez.
     sb.rpc('renombrar_categoria', { vieja: vieja, nueva: nueva }).then(({ error }) => {
@@ -563,7 +685,14 @@ class Component extends DCLogic {
       this.setState({ aviso: 'No se puede borrar "' + nombre + '": la usan ' + n + ' producto(s). Cambiales la categoría primero.' });
       return;
     }
-    if (!window.confirm('¿Borrar la categoría "' + nombre + '"?')) return;
+    this.confirmar({
+      titulo: '¿Borrar la categoría?',
+      mensaje: '"' + nombre + '" no tiene productos, así que se puede borrar sin afectar la tienda.',
+      etiquetaOk: 'Sí, borrar', peligro: true
+    }).then(ok => { if (ok) this.borrarCategoriaConfirmada(nombre); });
+  }
+
+  borrarCategoriaConfirmada(nombre) {
     this.setState({ trabajando: true });
     sb.from('categorias').delete().eq('nombre', nombre).then(({ error }) => {
       if (error) { this.setState({ trabajando: false, aviso: 'No se pudo borrar: ' + error.message }); return; }
@@ -933,7 +1062,12 @@ class Component extends DCLogic {
     if (this.state.arrancando) {
       return { contenido: h('p', { style: { padding: '40px 24px', color: BODY } }, 'Cargando…') };
     }
-    return { contenido: this.state.sesion ? this.vistaPanel() : this.vistaAcceso() };
+    return {
+      contenido: h('div', { key: 'raiz' }, [
+        this.state.sesion ? this.vistaPanel() : this.vistaAcceso(),
+        this.vistaDialogo()
+      ])
+    };
   }
 }
 </script>
