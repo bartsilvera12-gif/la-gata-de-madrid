@@ -180,7 +180,7 @@
     <div class="lgm-foot" style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:minmax(220px,1.4fr) auto auto minmax(0,auto);gap:24px clamp(24px,4vw,56px);align-items:start">
       <div>
         <p style="margin:0 0 12px;font-family:'Cormorant Garamond',serif;font-size:27px;letter-spacing:.06em;color:#3A2B26">La Gata de Madrid.</p>
-        <p style="margin:0;max-width:34ch;font-size:15px;line-height:1.7;color:#5A5350">Perfumería, tecnología, bolsos y más. Productos originales, elegidos con ojo de gata.</p>
+        <p style="margin:0;max-width:34ch;font-size:15px;line-height:1.7;color:#5A5350">{{ pieDescripcion }}</p>
       </div>
       <div>
         <p style="margin:0 0 14px;font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;color:#5F6B47">Tienda</p>
@@ -194,8 +194,8 @@
       <div>
         <p style="margin:0 0 14px;font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;color:#5F6B47">Contacto</p>
         <div style="display:flex;flex-direction:column;gap:10px;font-size:15px;color:#5A5350">
-          <a href="mailto:hola@lagatademadrid.com">hola@lagatademadrid.com</a>
-          <a href="https://wa.me/595981772872">+595 981 772 872</a>
+          <a href="{{ correoHref }}">{{ correo }}</a>
+          <a href="{{ waHref }}">{{ waTexto }}</a>
         </div>
       </div>
       <img class="lgm-footcat" src="./assets/gato-echado.png" alt="" aria-hidden="true" style="justify-self:end;align-self:end;width:clamp(150px,17vw,240px);height:auto;display:block;pointer-events:none">
@@ -233,6 +233,9 @@ class Component extends DCLogic {
     const L = window.LGM;
     const r = parseHash();
     this.setState({ route: r, cart: L ? L.readCart() : {}, panel: r.cart ? 'cart' : null });
+    // El catálogo llega de Supabase un instante después: cuando está, se
+    // vuelve a dibujar. Hasta entonces se ve el catálogo de respaldo.
+    if (L) L.alCargar(() => { this.setState({ datos: (this.state.datos || 0) + 1 }); setTimeout(() => this.observeReveals(), 30); });
     this._onHash = () => {
       const next = parseHash();
       this.setState({ route: next, shot: 0, panel: next.cart ? 'cart' : null, cat: next.cat || null });
@@ -540,7 +543,7 @@ class Component extends DCLogic {
           style: { position: 'relative', maxWidth: '1240px', margin: '0 auto', padding: 'clamp(72px,10vw,132px) 28px clamp(72px,10vw,120px)' }
         }, [
           h('h1', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(44px,6vw,78px)', lineHeight: 1.02, color: '#FFFFFF', textShadow: '0 2px 20px rgba(20,14,12,.5)' } }, [
-            'Elegancia', h('br', { key: 'b' }), h('em', { key: 'i', style: { color: '#F3C9D2' } }, 'con siete vidas.')
+            L.cfg('hero_titulo'), h('br', { key: 'b' }), h('em', { key: 'i', style: { color: '#F3C9D2' } }, L.cfg('hero_subtitulo'))
           ]),
           h('div', { key: 'cta', style: { display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '32px' } }, [
             h('a', { key: 'p', onClick: () => this.go('#/productos'), style: { background: '#65734A', color: '#FFFFFF', padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase' } }, 'Ver productos'),
@@ -574,7 +577,7 @@ class Component extends DCLogic {
           h('h2', { key: 'h', style: { margin: 0, fontFamily: serif, fontWeight: 500, fontSize: 'clamp(30px,4vw,48px)', lineHeight: 1.1, color: INK } }, 'Lo que más se busca'),
           h('a', { key: 'a', onClick: () => this.go('#/productos'), style: { fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', borderBottom: '1px solid #E0A8B6', paddingBottom: '3px' } }, 'Ver todo')
         ]),
-        this.grid(all.slice(0, 4))
+        this.grid((all.some(p => p.destacado) ? all.filter(p => p.destacado) : all).slice(0, 4))
       ])),
       this.section([
         this.eyebrow('— Perfumería'),
@@ -601,14 +604,14 @@ class Component extends DCLogic {
         style: { position: 'relative', zIndex: 3, maxWidth: '1240px', margin: '0 auto', padding: 'clamp(32px,4.5vw,60px) 28px calc(clamp(58px,8vw,116px) + clamp(26px,3vw,44px))', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '22px' }
       }, [
         h('div', { key: 'l' }, [
-          h('p', { key: 'e', style: { margin: '0 0 10px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#DCE4C9' } }, 'De dónde viene el nombre'),
-          h('h2', { key: 'h', style: { margin: '0 0 8px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(26px,3.2vw,40px)', lineHeight: 1.12 } }, 'Dos debilidades de la casa'),
-          h('p', { key: 'p', style: { margin: 0, maxWidth: '46ch', fontSize: '15.5px', lineHeight: 1.7, color: '#E8EEDC' } }, 'Los gatos y Madrid. De ahí salió el nombre, el cascabel dorado y la forma de elegir cada cosa: una por una, sin apuro.')
+          h('p', { key: 'e', style: { margin: '0 0 10px', fontSize: '12.5px', letterSpacing: '.24em', textTransform: 'uppercase', color: '#DCE4C9' } }, L.cfg('banda_eyebrow')),
+          h('h2', { key: 'h', style: { margin: '0 0 8px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(26px,3.2vw,40px)', lineHeight: 1.12 } }, L.cfg('banda_titulo')),
+          h('p', { key: 'p', style: { margin: 0, maxWidth: '46ch', fontSize: '15.5px', lineHeight: 1.7, color: '#E8EEDC' } }, L.cfg('banda_texto'))
         ]),
         h('a', {
           key: 'a', onClick: () => this.go('#/nosotros'),
           style: { background: '#FDFBF8', color: INK, padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' }
-        }, 'Conocé la historia')
+        }, L.cfg('banda_boton'))
       ])]),
       this.section([
         this.eyebrow('— Tecnología y accesorios'),
@@ -803,6 +806,7 @@ class Component extends DCLogic {
   }
 
   viewNosotros() {
+    const L = window.LGM;
     const stats = [['100%', 'Productos originales, con caja y sellado de fábrica'], ['1 a 3', 'Unidades por pieza: stock corto y rotativo'], ['24 h', 'Respondemos consultas por WhatsApp'], ['7 días', 'Para cambios, con el producto sin uso']];
     const collage = [
       ['./assets/madrid-granvia.png', 'Madrid', 'La otra debilidad de la casa'],
@@ -819,9 +823,9 @@ class Component extends DCLogic {
         h('div', { key: 'top', className: 'lgm-about-top' }, [
           h('div', { key: 't' }, [
             this.eyebrow('— Nosotros'),
-            h('h1', { key: 'h', style: { margin: '0 0 20px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(32px,4.2vw,52px)', lineHeight: 1.08, color: INK } }, 'Una gata negra, un cascabel dorado y muchas ganas de encontrar cosas lindas.'),
-            h('p', { key: 'p1', style: { margin: '0 0 16px', fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'Empezamos buscando un bolso para uso propio y terminamos armando una tienda online. Vendemos por Instagram y WhatsApp: perfumería original, tecnología, bolsos y accesorios, cada cosa elegida una por una.'),
-            h('p', { key: 'p2', style: { margin: 0, fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. El nombre viene de dos debilidades de la casa: los gatos y Madrid.')
+            h('h1', { key: 'h', style: { margin: '0 0 20px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(32px,4.2vw,52px)', lineHeight: 1.08, color: INK } }, L.cfg('nosotros_titulo')),
+            h('p', { key: 'p1', style: { margin: '0 0 16px', fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, L.cfg('nosotros_p1')),
+            h('p', { key: 'p2', style: { margin: 0, fontSize: '16.5px', lineHeight: 1.85, color: BODY } }, L.cfg('nosotros_p2'))
           ]),
           h('div', {
             key: 'i', className: 'lgm-zoom', 'data-reveal': '1',
@@ -878,7 +882,7 @@ class Component extends DCLogic {
             h('h2', { key: 'h', style: { margin: '0 0 10px', fontFamily: serif, fontWeight: 500, fontSize: 'clamp(26px,3.2vw,40px)', lineHeight: 1.12, color: '#FDFBF8' } }, '¿Buscás algo puntual?'),
             h('p', { key: 'p', style: { margin: 0, maxWidth: '48ch', fontSize: '15.5px', lineHeight: 1.75, color: '#E6D6CF' } }, 'Contanos qué producto querés y te confirmamos si lo conseguimos, con precio y fecha estimada.')
           ]),
-          h('a', { key: 'a', href: 'https://wa.me/595981772872', style: { background: '#E0A8B6', color: INK, padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, 'Hacer un pedido')
+          h('a', { key: 'a', href: 'https://wa.me/' + L.WA, style: { background: '#E0A8B6', color: INK, padding: '15px 30px', borderRadius: '999px', fontSize: '13px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, 'Hacer un pedido')
         ])
       ], { paddingTop: 'clamp(48px,6vw,80px)' })
     ]);
@@ -915,7 +919,7 @@ class Component extends DCLogic {
           style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '18px', background: SOFT, border: '1px solid ' + LINE, borderRadius: '18px', padding: 'clamp(22px,3.4vw,40px)' }
         }, [
           h('p', { key: 'p', style: { margin: 0, maxWidth: '54ch', fontSize: '15.5px', lineHeight: 1.75, color: BODY } }, '¿Dudas sobre tus datos o querés que los borremos? Escribinos y lo hacemos.'),
-          h('a', { key: 'a', href: 'https://wa.me/595981772872', style: { background: '#65734A', color: '#FFFFFF', padding: '14px 28px', borderRadius: '999px', fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, 'Escribinos')
+          h('a', { key: 'a', href: 'https://wa.me/' + window.LGM.WA, style: { background: '#65734A', color: '#FFFFFF', padding: '14px 28px', borderRadius: '999px', fontSize: '12.5px', letterSpacing: '.16em', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, 'Escribinos')
         ])
       ], { paddingTop: 'clamp(40px,5vw,64px)' })
     ]);
@@ -977,6 +981,7 @@ class Component extends DCLogic {
   }
 
   renderVals() {
+    const L = window.LGM;
     const r = this.state.route;
     const view = r.view === 'productos' ? this.viewProductos()
       : r.view === 'producto' ? this.viewProducto(r.id)
@@ -986,6 +991,11 @@ class Component extends DCLogic {
     const count = Object.keys(this.state.cart).reduce((s, k) => s + this.state.cart[k], 0);
     return {
       pawsEl: this.pawsLayer(),
+      pieDescripcion: L ? L.cfg('pie_descripcion') : '',
+      correo: L ? L.cfg('email') : '',
+      correoHref: L ? 'mailto:' + L.cfg('email') : '#',
+      waHref: L ? 'https://wa.me/' + L.WA : '#',
+      waTexto: L ? '+' + String(L.WA).replace(/^(\d{3})(\d{3})(\d{3})(\d{3})$/, '$1 $2 $3 $4') : '',
       viewEl: window.LGM ? view : null,
       overlayEl: this.state.panel === 'cart' && window.LGM ? this.cartPanel() : null,
       cartCount: count,

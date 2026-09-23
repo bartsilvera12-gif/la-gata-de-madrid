@@ -26,3 +26,5 @@ on conflict (clave) do update set
   ayuda    = excluded.ayuda,
   tipo     = excluded.tipo,
   orden    = excluded.orden;
+
+notify pgrst, 'reload schema';

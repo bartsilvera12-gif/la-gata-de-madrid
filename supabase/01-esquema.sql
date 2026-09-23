@@ -4,8 +4,10 @@
 -- Se puede volver a ejecutar sin romper nada.
 --
 -- Las tablas NO van en "public": viven en el esquema "gatademadrid".
--- Ojo: después de correr esto hay que exponer "gatademadrid" en
--- Project Settings → API → Exposed schemas, o la tienda no ve nada.
+-- Ese esquema tiene que estar expuesto en la API, o la tienda no ve nada:
+--   · Supabase Cloud: Project Settings → API → Exposed schemas
+--   · Autoalojado (api.neura.com.py): variable PGRST_DB_SCHEMAS del
+--     contenedor de PostgREST. En esta instancia ya está hecho.
 -- ============================================================
 
 create schema if not exists gatademadrid;
@@ -169,3 +171,10 @@ select schemaname, tablename, policyname, roles, cmd
 from pg_policies
 where schemaname = 'gatademadrid'
 order by policyname;
+
+
+-- ---------- 7) Avisar a PostgREST ----------
+-- En Supabase autoalojado la caché de esquema no se entera sola de las tablas
+-- nuevas: sin esto, la API responde "Could not find the table in the schema
+-- cache" aunque la tabla exista.
+notify pgrst, 'reload schema';

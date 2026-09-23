@@ -1,7 +1,18 @@
-/* Catálogo compartido — La Gata de Madrid
-   Los datos base viven acá. El panel de admin guarda cambios en localStorage
-   (clave lgm.catalogo.v1) y todas las páginas leen la versión combinada. */
+/* Datos de la tienda — La Gata de Madrid
+
+   Los productos y la configuración viven en Supabase; este archivo los trae y
+   avisa cuando llegan. Si la base no responde, la tienda igual abre con el
+   catálogo de respaldo de abajo, en vez de quedar vacía.
+
+   La clave de acá es la pública ("anon"): solo permite leer. Cualquier cambio
+   exige iniciar sesión, y eso solo pasa en el panel. */
 (function () {
+  var API = 'https://api.neura.com.py';
+  var ESQUEMA = 'gatademadrid';
+  var CLAVE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzc0MTAxNDYxLCJleHAiOjE5MzE3ODE0NjF9.7_wAph8IolPMXtgfpezSwS5XR62IdD__qhqCywLDp3Q';
+
+  // ---------- Catálogo de respaldo ----------
+  // Si Supabase no contesta, la tienda muestra esto.
   var BASE = [
     { id: 'redmi-buds-8-pro', cat: 'Audio', name: 'Redmi Buds 8 Pro', price: 320000, badge: 'Nuevo',
       desc: 'Bluetooth 5.3 · hasta 36 h de batería · cancelación de ruido.',
@@ -50,36 +61,89 @@
       specs: [['Tipo', 'Eau de toilette spray'], ['Contenido', '50 ml'], ['Marca', 'Calvin Klein'], ['Género', 'Hombre']] }
   ];
 
-  var STORE_KEY = 'lgm.catalogo.v1';
   var CART_KEY = 'lgm.cart.v1';
-  var WA = '595981772872';
 
-  function clone(list) { return JSON.parse(JSON.stringify(list)); }
+  // Valores por defecto: los mismos textos que había en el código, para que
+  // el sitio se vea igual aunque la configuración todavía no haya llegado.
+  var CFG_BASE = {
+    whatsapp: '595981772872',
+    email: 'hola@lagatademadrid.com',
+    sitio_nombre: 'La Gata de Madrid',
+    pie_descripcion: 'Perfumería, tecnología, bolsos y más. Productos originales, elegidos con ojo de gata.',
+    hero_titulo: 'Elegancia',
+    hero_subtitulo: 'con siete vidas.',
+    banda_eyebrow: 'De dónde viene el nombre',
+    banda_titulo: 'Dos debilidades de la casa',
+    banda_texto: 'Los gatos y Madrid. De ahí salió el nombre, el cascabel dorado y la forma de elegir cada cosa: una por una, sin apuro.',
+    banda_boton: 'Conocé la historia',
+    nosotros_titulo: 'Una gata negra, un cascabel dorado y muchas ganas de encontrar cosas lindas.',
+    nosotros_p1: 'Empezamos buscando un bolso para uso propio y terminamos armando una tienda online. Vendemos por Instagram y WhatsApp: perfumería original, tecnología, bolsos y accesorios, cada cosa elegida una por una.',
+    nosotros_p2: 'Trabajamos con pocas unidades de cada cosa: si te gusta, es tuya. El nombre viene de dos debilidades de la casa: los gatos y Madrid.'
+  };
 
-  function overrides() {
-    try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch (e) { return {}; }
+  var lista = null;              // productos de la base; null = todavía no llegaron
+  var cfg = {};                  // configuración de la base
+  var oyentes = [];
+  var estado = 'cargando';       // cargando | listo | respaldo
+
+  function clone(x) { return JSON.parse(JSON.stringify(x)); }
+
+  function avisar() { oyentes.forEach(function (fn) { try { fn(); } catch (e) {} }); }
+
+  // De los nombres de la base a los que usa la tienda.
+  function mapear(r) {
+    return {
+      id: r.id,
+      name: r.nombre,
+      cat: r.categoria,
+      price: Number(r.precio) || 0,
+      badge: r.badge || null,
+      desc: r.desc_corta || '',
+      long: r.desc_larga || '',
+      gallery: Array.isArray(r.fotos) ? r.fotos : [],
+      specs: Array.isArray(r.ficha) ? r.ficha : [],
+      stock: Number(r.stock) || 0,
+      destacado: !!r.destacado,
+      orden: Number(r.orden) || 0
+    };
+  }
+
+  function pedir(tabla, consulta) {
+    return fetch(API + '/rest/v1/' + tabla + '?' + consulta, {
+      headers: { apikey: CLAVE, Authorization: 'Bearer ' + CLAVE, 'Accept-Profile': ESQUEMA }
+    }).then(function (r) {
+      if (!r.ok) throw new Error(tabla + ': HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  function cargar() {
+    var pProd = pedir('productos', 'select=*&order=orden.asc,creado.asc');
+    // Si falta la tabla de configuración, la tienda sigue con los valores por
+    // defecto en vez de caerse entera.
+    var pCfg = pedir('configuracion', 'select=clave,valor').catch(function () { return []; });
+
+    return Promise.all([pProd, pCfg]).then(function (res) {
+      lista = res[0].map(mapear);
+      res[1].forEach(function (f) { cfg[f.clave] = f.valor; });
+      estado = 'listo';
+      avisar();
+    }).catch(function (e) {
+      estado = 'respaldo';
+      if (window.console) console.warn('[LGM] No se pudo leer Supabase, uso el catálogo de respaldo:', e.message);
+      avisar();
+    });
   }
 
   function products() {
-    var ov = overrides();
-    return clone(BASE)
-      .map(function (p) {
-        var patch = ov[p.id];
-        if (!patch) return p;
-        Object.keys(patch).forEach(function (k) { p[k] = patch[k]; });
-        return p;
-      })
-      .filter(function (p) { return !p.oculto; });
+    if (lista) return clone(lista);
+    return clone(BASE).map(function (p) { p.stock = 1; p.destacado = false; return p; });
   }
 
   function find(id) {
     var all = products();
     for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i];
     return null;
-  }
-
-  function saveOverrides(map) {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(map)); } catch (e) {}
   }
 
   function readCart() {
@@ -95,15 +159,20 @@
 
   window.LGM = {
     BASE: BASE,
-    WA: WA,
-    STORE_KEY: STORE_KEY,
     products: products,
     find: find,
-    overrides: overrides,
-    saveOverrides: saveOverrides,
     readCart: readCart,
     writeCart: writeCart,
-    gs: function (n) { return 'Gs. ' + Number(n || 0).toLocaleString('es-PY'); },
-    pageFor: function (id) { return './producto-' + id + '.dc.html'; }
+    // Un ajuste del sitio, con el valor de fábrica como respaldo.
+    cfg: function (clave) {
+      var v = cfg[clave];
+      return (v === undefined || v === null || v === '') ? (CFG_BASE[clave] || '') : v;
+    },
+    get WA() { return this.cfg('whatsapp'); },
+    estado: function () { return estado; },
+    alCargar: function (fn) { oyentes.push(fn); },
+    gs: function (n) { return 'Gs. ' + Number(n || 0).toLocaleString('es-PY'); }
   };
+
+  cargar();
 })();
