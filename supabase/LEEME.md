@@ -100,7 +100,7 @@ las reglas. **No me la pases y no la pongas en ningún archivo del sitio.**
 
 ## Usar el panel
 
-Está en `Admin.dc.html`, al lado de la tienda: `tudominio.com/Admin.dc.html`.
+Está en **`tudominio.com/admin/`**.
 Entrás con el correo y la contraseña del usuario que creaste en el paso 5.
 
 **Productos.** Cada tarjeta se abre tocándola. Podés cambiar nombre, categoría,

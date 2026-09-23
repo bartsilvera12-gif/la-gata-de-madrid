@@ -12,6 +12,14 @@ Options -Indexes
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
 
+# El panel vive en admin/index.html, así que /admin/ lo sirve DirectoryIndex
+# sin necesidad de reglas. El buscador no debe indexarlo.
+<IfModule mod_headers.c>
+  <If "%{REQUEST_URI} =~ m#^/admin#">
+    Header set X-Robots-Tag "noindex, nofollow"
+  </If>
+</IfModule>
+
 # ---- Compresión ----
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/plain text/css

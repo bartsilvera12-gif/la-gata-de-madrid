@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
+<script src="../support.js"></script>
 </head>
 <body>
 <x-dc>
@@ -11,9 +11,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Panel · La Gata de Madrid</title>
-<link rel="icon" type="image/png" sizes="32x32" href="./assets/favicon-32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="./assets/favicon-16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="./assets/favicon-180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
@@ -420,7 +420,7 @@ class Component extends DCLogic {
 
         h('div', { key: 'acc', style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', borderTop: '1px solid #EFE6DB', paddingTop: '16px' } }, [
           h('button', { key: 'g', type: 'button', className: 'ad-btn ad-verde', disabled: t || !sucio, onClick: () => this.guardar(p.id) }, sucio ? 'Guardar cambios' : 'Sin cambios'),
-          h('a', { key: 'v', href: './index.html#/producto/' + p.id, target: '_blank', rel: 'noopener', className: 'ad-btn ad-borde', style: { display: 'inline-block' } }, 'Ver en la tienda'),
+          h('a', { key: 'v', href: '../index.html#/producto/' + p.id, target: '_blank', rel: 'noopener', className: 'ad-btn ad-borde', style: { display: 'inline-block' } }, 'Ver en la tienda'),
           h('span', { key: 'sp', style: { flex: 1 } }),
           h('button', { key: 'b', type: 'button', className: 'ad-btn ad-peligro', disabled: t, onClick: () => this.borrar(p.id, d.nombre) }, 'Borrar')
         ])
@@ -483,7 +483,7 @@ class Component extends DCLogic {
         this.campo('Contraseña', '', h('input', { className: 'ad-campo', type: 'password', autoComplete: 'current-password', value: this.state.clave, onChange: (e) => this.setState({ clave: e.target.value }) })),
         this.state.errorLogin ? h('p', { key: 'err', style: { margin: 0, fontSize: '14px', color: '#8C475C' } }, this.state.errorLogin) : null,
         h('button', { key: 'b', type: 'submit', className: 'ad-btn ad-verde', disabled: this.state.trabajando, style: { marginTop: '4px' } }, this.state.trabajando ? 'Entrando…' : 'Entrar'),
-        h('a', { key: 'v', href: './index.html', style: { fontSize: '13px', textAlign: 'center', color: '#8C837E' } }, 'Volver a la tienda')
+        h('a', { key: 'v', href: '../index.html', style: { fontSize: '13px', textAlign: 'center', color: '#8C837E' } }, 'Volver a la tienda')
       ]));
   }
 
@@ -496,7 +496,7 @@ class Component extends DCLogic {
       }, [
         h('span', { key: 't', style: { fontFamily: SERIF, fontSize: '20px', letterSpacing: '.09em', textTransform: 'uppercase' } }, 'Panel · La Gata de Madrid'),
         h('div', { key: 'a', style: { display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12.5px', letterSpacing: '.13em', textTransform: 'uppercase' } }, [
-          h('a', { key: 'v', href: './index.html', target: '_blank', rel: 'noopener', style: { color: '#E0A8B6' } }, 'Ver tienda ↗'),
+          h('a', { key: 'v', href: '../index.html', target: '_blank', rel: 'noopener', style: { color: '#E0A8B6' } }, 'Ver tienda ↗'),
           h('button', { key: 's', type: 'button', onClick: () => this.salir(), style: { cursor: 'pointer', background: 'transparent', border: '1px solid rgba(247,243,238,.35)', color: '#F7F3EE', borderRadius: '999px', padding: '8px 16px', fontSize: '11.5px', letterSpacing: '.13em', textTransform: 'uppercase' } }, 'Salir')
         ])
       ]),
